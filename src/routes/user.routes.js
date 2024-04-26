@@ -6,61 +6,10 @@ const router = express.Router()
 const userController = require('../controllers/user.controller')
 const logger = require('../util/logger')
 
-// Tijdelijke functie om niet bestaande routes op te vangen
-const notFound = (req, res, next) => {
-    next({
-        status: 404,
-        message: 'Route not found',
-        data: {}
-    })
-}
-
-// Input validation functions for user routes
-const validateUserCreate = (req, res, next) => {
-    if (!req.body.emailAdress || !req.body.firstName || !req.body.lastName) {
-        next({
-            status: 400,
-            message: 'Missing email or password',
-            data: {}
-        })
-    }
-    next()
-}
-
-// Input validation function 2 met gebruik van assert
-const validateUserCreateAssert = (req, res, next) => {
+// Validation user
+const validateUser= (req, res, next) => {
     try {
-        assert(req.body.emailAdress, 'Missing email')
-        assert(req.body.firstName, 'Missing or incorrect first name')
-        assert(req.body.lastName, 'Missing last name')
-        next()
-    } catch (ex) {
-        next({
-            status: 400,
-            message: ex.message,
-            data: {}
-        })
-    }
-}
-
-// Input validation function 2 met gebruik van assert
-const validateUserCreateChaiShould = (req, res, next) => {
-    try {
-        req.body.firstName.should.not.be.empty.and.a('string')
-        req.body.lastName.should.not.be.empty.and.a('string')
-        req.body.emailAdress.should.not.be.empty.and.a('string').and.match(/@/)
-        next()
-    } catch (ex) {
-        next({
-            status: 400,
-            message: ex.message,
-            data: {}
-        })
-    }
-}
-
-const validateUserCreateChaiExpect = (req, res, next) => {
-    try {
+        // Firstname validation
         assert(req.body.firstName, 'Missing or incorrect firstName field')
         chai.expect(req.body.firstName).to.not.be.empty
         chai.expect(req.body.firstName).to.be.a('string')
@@ -68,10 +17,46 @@ const validateUserCreateChaiExpect = (req, res, next) => {
             /^[a-zA-Z]+$/,
             'firstName must be a string'
         )
-        logger.trace('User successfully validated')
+
+        // Lastname validation
+        assert(req.body.lastName, 'Missing or incorrect lastName field');
+        chai.expect(req.body.lastName).to.not.be.empty;
+        chai.expect(req.body.lastName).to.be.a('string');
+        chai.expect(req.body.lastName).to.match(
+            /^[a-zA-Z]+(?: [a-zA-Z]+)?$/,
+            'lastName must be a string'
+        );
+
+        // EmailAdress validation
+        assert(req.body.emailAdress, 'Missing or incorrect email field');
+            chai.expect(req.body.emailAdress).to.not.be.empty
+            chai.expect(req.body.emailAdress).to.be.a('string')
+            chai.expect(req.body.emailAdress).to.match(
+                /^[a-zA-Z0-9]+\.[a-zA-Z]{2,}@[a-zA-Z]{2,}\.[a-zA-Z]{2,3}$/,
+                'Invalid emailAdress'
+            )
+       
+            // Password validation
+            assert(req.body.password, 'Missing or incorrect password field')
+            chai.expect(req.body.password).to.not.be.empty
+            chai.expect(req.body.password).to.be.a('string')
+            chai.expect(req.body.password).to.match(
+                /^(?=.*[A-Z])(?=.*\d).{8,}$/,
+                'password must be at least 8 characters with at least one uppercase letter and one digit'
+            )
+       
+            // PhoneNumber validation   
+            assert(req.body.phoneNumber, 'Missing or incorrect phoneNumber field')
+            chai.expect(req.body.phoneNumber).to.not.be.empty
+            chai.expect(req.body.phoneNumber).to.be.a('string')
+            chai.expect(req.body.phoneNumber).to.match(
+                /^06[\s-]?\d{8}$/,
+                'phoneNumber must be in the format 06-12345678, 06 12345678, or 0612345678'
+            )
+
         next()
+
     } catch (ex) {
-        logger.trace('User validation failed:', ex.message)
         next({
             status: 400,
             message: ex.message,
@@ -81,12 +66,20 @@ const validateUserCreateChaiExpect = (req, res, next) => {
 }
 
 // Userroutes
-router.post('/api/user', validateUserCreateChaiExpect, userController.create)
+
+// Create user
+router.post('/api/user', validateUser, userController.create)
+
+// Read all users
 router.get('/api/user', userController.getAll)
+
+// Read one user
 router.get('/api/user/:userId', userController.getById)
 
-// Tijdelijke routes om niet bestaande routes op te vangen
-router.put('/api/user/:userId', notFound)
-router.delete('/api/user/:userId', notFound)
+// Update user
+router.put('/api/user/:userId', validateUser, userController.update)
+
+// Delete user
+router.delete('/api/user/:userId', userController.delete)
 
 module.exports = router

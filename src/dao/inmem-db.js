@@ -49,20 +49,56 @@ const database = {
     },
 
     add(item, callback) {
-        // Simuleer een asynchrone operatie
         setTimeout(() => {
-            // Voeg een id toe en voeg het item toe aan de database
-            item.id = this._index++
-            // Voeg item toe aan de array
-            this._data.push(item)
+            const existingUserEmail = this._data.find(existingUserEmail => existingUserEmail.emailAdress === item.emailAdress)
+           
+            if (existingUserEmail) {
+                callback({message: 'Email address already exists!'}, null)
+            } else {
+                item.id = this._index++
+                this._data.push(item)
+                callback(null, item)
+            }
+        }, this._delayTime)
+    },
 
-            // Roep de callback aan het einde van de operatie
-            // met het toegevoegde item als argument, of null als er een fout is opgetreden
-            callback(null, item)
+    update(id, newUser, callback) {
+        setTimeout(() => {
+            const getUserId = this._data.findIndex(item => item.id === parseInt(id))
+     
+            if (!Number.isInteger(getUserId) || getUserId === -1) {
+                callback({status: 404, message: `Invalid id: ${id}` })
+                return
+            } else {
+                const updatedUser = this._data[getUserId]
+                
+                if (newUser.firstName) updatedUser.firstName = newUser.firstName
+                if (newUser.lastName) updatedUser.lastName = newUser.lastName
+                if (newUser.emailAdress) updatedUser.emailAdress = newUser.emailAdress
+                callback(null, updatedUser)
+            }
+        }, this._delayTime)
+    },
+    
+    delete(id, callback) {
+        const deleteUserId = this._data.findIndex(item => item.id === parseInt(id))
+        setTimeout(() => {
+            if (!Number.isInteger(deleteUserId || !deleteUserId === -1)) {
+                callback({status: 404, message: `Invalid id: ${id}` })
+                return
+            } else {
+                const removedItem = this._data.filter((item, index) => {
+                    if (index === deleteUserId) {
+                        return true
+                    }
+                    return false
+                })[0]
+
+                callback(null, removedItem)
+            }
         }, this._delayTime)
     }
-
-    // Voeg zelf de overige database functionaliteit toe
+ 
 }
 
 module.exports = database
