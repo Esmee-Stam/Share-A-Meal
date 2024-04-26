@@ -16,9 +16,15 @@ describe('UC-202 Opvragen van overzicht van users', () => {
         done()
     })
 
-    it.skip('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
-        // Status code: 200
-        done()
+    it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
+        chai.request(server)
+            .get(endpointToTest) 
+            .end((err, res) => {
+                res.should.have.status(200)
+                res.body.should.be.an('object')
+                res.body.should.have.property('data').that.is.an('array').with.lengthOf.at.least(2)
+                done()
+            })
     })
 
     it.skip('TC-202-2 Toon gebruikers met zoekterm op niet-bestaande velden', (done) => {

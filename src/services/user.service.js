@@ -33,7 +33,49 @@ const userService = {
                 })
             }
         })
+    },
+    getById: (id, callback) => {
+        database.getById(id, (err, data) => {
+            if (err) {
+                callback(err, null)
+            } else {
+                console.log(data)
+                callback(null, {
+                    message: `Found user with id ${id}.`,   
+                    data: data  
+                })
+            }
+        }
+    )},
+
+      // update
+      update(userId, updatedUser, callback) {
+        database.update(userId, updatedUser, (err, data) => {
+            if (err) {
+                callback(err, null)
+            } else {
+                callback(null, {
+                    message: `Updated user with id ${userId}`,
+                    data: data
+                })
+            }
+        })
+    },
+ 
+    // delete
+    delete: (id, callback) => {
+        database.delete(id, (err, data) => {
+            if (err) {
+                callback(err, null)
+            } else {
+                callback(null, {
+                    message: `User deleted with id ${id}.`,
+                    data: data
+                })
+            }
+        })
     }
 }
+
 
 module.exports = userService
