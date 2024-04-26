@@ -4,11 +4,7 @@ const logger = require('../util/logger')
 let userController = {
     create: (req, res, next) => {
         const user = req.body
-<<<<<<< HEAD
-        logger.info('create user', user.firstName, user.lastName)
-=======
         
->>>>>>> feature-inputvalidation
         userService.create(user, (error, success) => {
             if (error) {
                 return next({

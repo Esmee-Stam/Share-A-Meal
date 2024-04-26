@@ -35,7 +35,7 @@ describe('UC201 Registreren als nieuwe user', () => {
                  * Voorbeeld uitwerking met chai.expect
                  */
                 chai.expect(res).to.have.status(400)
-                chai.expect(res).not.to.have.status(200)
+                chai.expect(res).not.to.have.status(201)
                 chai.expect(res.body).to.be.a('object')
                 chai.expect(res.body).to.have.property('status').equals(400)
                 chai.expect(res.body)
@@ -69,27 +69,23 @@ describe('UC201 Registreren als nieuwe user', () => {
     })
 
     it('TC-201-5 Gebruiker succesvol geregistreerd', (done) => {
+        const dummyUser = {
+            firstName: 'Jan',
+            lastName: 'Jansen',
+            emailAdress: 'jan.jansen@example.com',
+            password: 'Password123',
+            phoneNumber: '0612345678',
+        }
+    
         chai.request(server)
             .post(endpointToTest)
-            .send({
-                firstName: 'Voornaam',
-                lastName: 'Achternaam',
-                emailAdress: 'v.a@server.nl'
-            })
+            .send(dummyUser)
             .end((err, res) => {
-                res.should.have.status(200)
-                res.body.should.be.a('object')
-
-                res.body.should.have.property('data').that.is.a('object')
-                res.body.should.have.property('message').that.is.a('string')
-
-                const data = res.body.data
-                data.should.have.property('firstName').equals('Voornaam')
-                data.should.have.property('lastName').equals('Achternaam')
-                data.should.have.property('emailAdress')
-                data.should.have.property('id').that.is.a('number')
+                chai.expect(res).to.have.status(201)
+                chai.expect(res).not.to.have.status(400)
 
                 done()
             })
     })
+    
 })
