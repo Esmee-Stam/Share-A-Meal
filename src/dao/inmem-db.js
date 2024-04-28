@@ -52,7 +52,7 @@ const database = {
         // Simuleer een asynchrone operatie
         setTimeout(() => {
             if (id < 0 || id >= this._data.length) {
-                callback({ message: `Error: id ${id} does not exist!` }, null)
+                callback({status: 404, message: `Error: id ${id} does not exist!` }, null)
             } else {
                 callback(null, this._data[id])
             }
@@ -64,7 +64,11 @@ const database = {
             const existingUserEmail = this._data.find(existingUserEmail => existingUserEmail.emailAdress === item.emailAdress)
            
             if (existingUserEmail) {
-                callback({message: 'Email address already exists!'}, null)
+                const error = {
+                    status: 403,
+                    message: 'Email address already exists'
+                }
+                callback(error, null)
             } else {
                 item.id = this._index++
                 this._data.push(item)
@@ -73,16 +77,21 @@ const database = {
         }, this._delayTime)
     },
 
+ 
+
     update(id, newUser, callback) {
         setTimeout(() => {
-            const getUserId = this._data.findIndex(item => item.id === parseInt(id))
-     
-            if (!Number.isInteger(getUserId) || getUserId === -1) {
-                callback({status: 404, message: `Invalid id: ${id}` })
-                return
+            const getUserIndex = this._data.findIndex(item => item.id === parseInt(id))
+
+            if (getUserIndex === -1) {
+                const error = {
+                    status: 404,
+                    message: `User with ID ${id} does not exist.`
+                }
+                return callback(error, null)
             } else {
-                const updatedUser = this._data[getUserId]
-                
+                const updatedUser = this._data[getUserIndex]
+
                 if (newUser.firstName) updatedUser.firstName = newUser.firstName
                 if (newUser.lastName) updatedUser.lastName = newUser.lastName
                 if (newUser.emailAdress) updatedUser.emailAdress = newUser.emailAdress
@@ -90,26 +99,24 @@ const database = {
             }
         }, this._delayTime)
     },
+
     
     delete(id, callback) {
         const deleteUserId = this._data.findIndex(item => item.id === parseInt(id))
         setTimeout(() => {
-            if (!Number.isInteger(deleteUserId || !deleteUserId === -1)) {
-                callback({status: 404, message: `Invalid id: ${id}` })
-                return
+            if (!Number.isInteger(deleteUserId) || deleteUserId === -1) {
+                const error = {
+                    status: 404,
+                    message: `User with ID ${id} does not exist.`
+                }
+                callback(error, null)
             } else {
-                const removedItem = this._data.filter((item, index) => {
-                    if (index === deleteUserId) {
-                        return true
-                    }
-                    return false
-                })[0]
-
+                const removedItem = this._data.filter(item => item.id === parseInt(id))[0]
                 callback(null, removedItem)
             }
         }, this._delayTime)
     }
- 
+
 }
 
 module.exports = database

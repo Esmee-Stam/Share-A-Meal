@@ -16,9 +16,14 @@ describe('UC206 Verwijderen van user', () => {
         done()
     })
 
-    it.skip('TC-206-1 Gebruiker bestaat niet', (done) => {
+    it('TC-206-1 Gebruiker bestaat niet', (done) => {
         // status 404
-        done()
+        chai.request(server)
+        .delete(`${endpointToTest}/7`)
+        .end((err, res) => {
+            res.should.have.status(404)
+            done()
+        })
     })
 
     it.skip('TC-206-2 Gebruiker is niet ingelogd', (done) => {
@@ -33,9 +38,14 @@ describe('UC206 Verwijderen van user', () => {
         done()
     })
 
-    it.skip('TC-206-3 Gebruiker succesvol verwijderd', (done) => {
+    it('TC-206-3 Gebruiker succesvol verwijderd', (done) => {
         // status 200
-        done()
-    })
+        chai.request(server)
+        .delete(`${endpointToTest}/1`)
+        .end((err, res) => {
+            res.should.have.status(200)
+            done()
+        })
 
+    })
 })

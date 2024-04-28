@@ -22,14 +22,15 @@ describe('UC204 Opvragen van usergegevens bij ID', () => {
         done()
     })
 
-    it.skip('TC-204-2 Gebruiker-Id bestaat niet', (done) => {
+    it('TC-204-2 Gebruiker-Id bestaat niet', (done) => {
+        // status 404
         chai.request(server)
             .get(`${endpointToTest}/7`)
             .end((err, res) => {
-                res.should.have.status(404);
-                done();
-            });
-    });
+                res.should.have.status(404)
+                done()
+            })
+    })
     
     
     it('TC-204-3 Gebruiker-ID bestaat', (done) => {
