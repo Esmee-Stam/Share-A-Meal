@@ -100,7 +100,6 @@ const database = {
         }, this._delayTime)
     },
 
-    
     delete(id, callback) {
         const deleteUserId = this._data.findIndex(item => item.id === parseInt(id))
         setTimeout(() => {
