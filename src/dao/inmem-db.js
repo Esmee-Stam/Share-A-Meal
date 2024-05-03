@@ -107,7 +107,7 @@ const database = {
             if (!Number.isInteger(deleteUserId) || deleteUserId === -1) {
                 const error = {
                     status: 404,
-                    message: `User with ID ${id} does not exist.`
+                    message: `User does not exist.`
                 }
                 callback(error, null)
             } else {
