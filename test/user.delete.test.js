@@ -21,7 +21,9 @@ describe('UC206 Verwijderen van user', () => {
         chai.request(server)
         .delete(`${endpointToTest}/7`)
         .end((err, res) => {
-            res.should.have.status(404)
+            chai.expect(res).to.have.status(404)
+            chai.expect(res.body).to.have.property('status').equals(404)
+            chai.expect(res.body).to.have.property('message').equals('User does not exist.')
             done()
         })
     })
@@ -43,7 +45,9 @@ describe('UC206 Verwijderen van user', () => {
         chai.request(server)
         .delete(`${endpointToTest}/1`)
         .end((err, res) => {
-            res.should.have.status(200)
+            chai.expect(res).to.have.status(200)
+            chai.expect(res.body).to.be.a('object')
+            chai.expect(res.body).to.have.property('data')
             done()
         })
 
