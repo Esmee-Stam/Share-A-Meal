@@ -6,7 +6,7 @@
 # Ignore package manager directories
 /node_modules/
 /packages/
-/.github/
+.github/
 /.github/workflows/
 
 # Ignore log files
@@ -28,3 +28,4 @@ src/dao/credentials.txt
 
 # Ignore GitHub workflows
 /.github/workflows/
+
