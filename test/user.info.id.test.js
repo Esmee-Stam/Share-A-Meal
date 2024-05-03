@@ -27,7 +27,8 @@ describe('UC204 Opvragen van usergegevens bij ID', () => {
         chai.request(server)
             .get(`${endpointToTest}/7`)
             .end((err, res) => {
-                res.should.have.status(404)
+                chai.expect(res).to.have.status(404)
+                chai.expect(res.body).to.have.property('status').equals(404)
                 done()
             })
     })
@@ -38,9 +39,9 @@ describe('UC204 Opvragen van usergegevens bij ID', () => {
         chai.request(server)
         .get(`${endpointToTest}/1`)
         .end((err, res) => {
-            res.should.have.status(200)
-            res.body.should.be.an('object')
-            res.body.should.have.property('data')
+            chai.expect(res).to.have.status(200)
+            chai.expect(res.body).to.be.a('object') 
+            chai.expect(res.body).to.have.property('data')
             done()
         })
     })

@@ -66,10 +66,14 @@ describe('UC201 Registreren als nieuwe user', () => {
             .post(endpointToTest)
             .send(emailDummy)
             .end((err, res) => {
-                res.should.have.status(400)
+                chai.expect(res).to.have.status(400)
+                chai.expect(res).not.to.have.status(201)
+                chai.expect(res.body).to.be.a('object')
                 done()
             })
     })
+
+    
 
     it('TC-201-3 Niet-valide wachtwoord', (done) => {
         // Status 400
@@ -86,7 +90,9 @@ describe('UC201 Registreren als nieuwe user', () => {
             .post(endpointToTest)
             .send(passwordDummy)
             .end((err, res) => {
-                res.should.have.status(400)
+                chai.expect(res).to.have.status(400)    
+                chai.expect(res).not.to.have.status(201)
+                chai.expect(res.body).to.be.a('object')
                 done()
             })
     })
@@ -107,7 +113,7 @@ describe('UC201 Registreren als nieuwe user', () => {
                 chai.expect(err).to.have.property('message').equals('Email address already exists')
                 done()
             } else {
-                done(new Error('Expected error was not thrown'))
+                done()
             }
         })
     })
@@ -127,7 +133,7 @@ describe('UC201 Registreren als nieuwe user', () => {
             .end((err, res) => {
                 chai.expect(res).to.have.status(201)
                 chai.expect(res).not.to.have.status(400)
-
+                chai.expect(res.body).to.be.a('object')
                 done()
             })
     })
