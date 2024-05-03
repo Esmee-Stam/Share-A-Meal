@@ -1,4 +1,3 @@
-
 # Ignore build output directories
 /bin/
 /build/
@@ -7,6 +6,7 @@
 # Ignore package manager directories
 /node_modules/
 /packages/
+/.github/workflows/
 
 # Ignore log files
 *.log
@@ -24,3 +24,6 @@ secrets.txt
 credentials.json
 *.PublishSettings
 src/dao/credentials.txt
+
+# Ignore GitHub workflows
+/github/workflows/
