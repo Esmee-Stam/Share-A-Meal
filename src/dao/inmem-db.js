@@ -12,15 +12,26 @@ const database = {
             id: 0,
             firstName: 'Hendrik',
             lastName: 'van Dam',
-            emailAdress: 'hvd@server.nl'
-            // Hier de overige velden uit het functioneel ontwerp
+            emailAdress: 'hvd@server.nl',
+            isActive : true,
+            password: '1234',
+            phoneNumber: '0687654321',
+            roles: ['admin', 'user'],
+            street: 'Schoolstraat 62',
+            city: 'Eindhoven'
+ 
         },
         {
             id: 1,
             firstName: 'Marieke',
             lastName: 'Jansen',
-            emailAdress: 'm@server.nl'
-            // Hier de overige velden uit het functioneel ontwerp
+            emailAdress: 'm@server.nl',
+            isActive : true,
+            password: '4321',
+            phoneNumber: '0612345678',
+            roles: ['user'],
+            street: 'Kerkstraat 61',
+            city: 'Breda'
         }
     ],
 
@@ -41,7 +52,7 @@ const database = {
         // Simuleer een asynchrone operatie
         setTimeout(() => {
             if (id < 0 || id >= this._data.length) {
-                callback({ message: `Error: id ${id} does not exist!` }, null)
+                callback({status: 404, message: `Error: id ${id} does not exist!` }, null)
             } else {
                 callback(null, this._data[id])
             }
@@ -49,20 +60,62 @@ const database = {
     },
 
     add(item, callback) {
-        // Simuleer een asynchrone operatie
         setTimeout(() => {
-            // Voeg een id toe en voeg het item toe aan de database
-            item.id = this._index++
-            // Voeg item toe aan de array
-            this._data.push(item)
+            const existingUserEmail = this._data.find(existingUserEmail => existingUserEmail.emailAdress === item.emailAdress)
+           
+            if (existingUserEmail) {
+                const error = {
+                    status: 403,
+                    message: 'Email address already exists'
+                }
+                callback(error, null)
+            } else {
+                item.id = this._index++
+                this._data.push(item)
+                callback(null, item)
+            }
+        }, this._delayTime)
+    },
 
-            // Roep de callback aan het einde van de operatie
-            // met het toegevoegde item als argument, of null als er een fout is opgetreden
-            callback(null, item)
+ 
+
+    update(id, newUser, callback) {
+        setTimeout(() => {
+            const getUserIndex = this._data.findIndex(item => item.id === parseInt(id))
+
+            if (getUserIndex === -1) {
+                const error = {
+                    status: 404,
+                    message: `User with ID ${id} does not exist.`
+                }
+                return callback(error, null)
+            } else {
+                const updatedUser = this._data[getUserIndex]
+
+                if (newUser.firstName) updatedUser.firstName = newUser.firstName
+                if (newUser.lastName) updatedUser.lastName = newUser.lastName
+                if (newUser.emailAdress) updatedUser.emailAdress = newUser.emailAdress
+                callback(null, updatedUser)
+            }
+        }, this._delayTime)
+    },
+
+    delete(id, callback) {
+        const deleteUserId = this._data.findIndex(item => item.id === parseInt(id))
+        setTimeout(() => {
+            if (!Number.isInteger(deleteUserId) || deleteUserId === -1) {
+                const error = {
+                    status: 404,
+                    message: `User does not exist.`
+                }
+                callback(error, null)
+            } else {
+                const removedItem = this._data.filter(item => item.id === parseInt(id))[0]
+                callback(null, removedItem)
+            }
         }, this._delayTime)
     }
 
-    // Voeg zelf de overige database functionaliteit toe
 }
 
 module.exports = database
