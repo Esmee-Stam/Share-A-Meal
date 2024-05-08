@@ -1,4 +1,5 @@
 const database = require('../dao/inmem-db')
+const databaseMaria = require('../dao/db.functions')
 const logger = require('../util/logger')
 
 const userService = {
@@ -23,7 +24,7 @@ const userService = {
 
     getAll: (callback) => {
         logger.info('getAll')
-        database.getAll((err, data) => {
+        databaseMaria.getAll((err, data) => {
             if (err) {
                 callback(err, null)
             } else {
