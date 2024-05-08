@@ -34,6 +34,20 @@ const userService = {
                 })
             }
         })
+    },
+
+    getById: (id, callback) => {
+        logger.info('getById', id)
+        databaseMaria.getById(id, (err, data) => {
+            if (err) {
+                callback(err, null)
+            } else {
+                callback(null, {
+                    message: `Found user with id ${id}.`,
+                    data: data
+                })
+            }
+        })
     }
 }
 
