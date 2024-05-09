@@ -1,5 +1,6 @@
 const database = require('../dao/inmem-db')
-const databaseMaria = require('../dao/db.functions')
+const db = require('../dao/mysql-db')
+
 const logger = require('../util/logger')
 
 const userService = {
@@ -24,31 +25,71 @@ const userService = {
 
     getAll: (callback) => {
         logger.info('getAll')
-        databaseMaria.getAll((err, data) => {
+        db.getConnection(function (err, connection) {
             if (err) {
+                logger.error(err)
                 callback(err, null)
-            } else {
-                callback(null, {
-                    message: `Found ${data.length} users.`,
-                    data: data
-                })
+                return
             }
+
+            connection.query(
+                'SELECT * FROM `user`',
+                function (error, results, fields) {
+                    connection.release()
+
+                    if (error) {
+                        logger.error(error)
+                        callback(error, null)
+                    } else {
+                        logger.debug(results)
+                        callback(null, {
+                            message: `Found ${results.length} users.`,
+                            data: results
+                        })
+                    }
+                }
+            )
         })
     },
 
     getById: (id, callback) => {
         logger.info('getById', id)
-        databaseMaria.getById(id, (err, data) => {
+        db.getConnection(function (err, connection) {
             if (err) {
+                logger.error(err)
                 callback(err, null)
-            } else {
-                callback(null, {
-                    message: `Found user with id ${id}.`,
-                    data: data
-                })
+                return
             }
+
+            connection.query(
+                'SELECT * FROM `user` WHERE `id` = ?',
+                [id],
+                function (error, results, fields) {
+                    connection.release()
+
+                    if (error) {
+                        logger.error(error)
+                        callback(error, null)
+                    } else {
+                        logger.debug(results)
+                        if (results.length === 0) {
+                            callback(
+                                { message: `Error: id ${id} does not exist!` },
+                                null
+                            )
+                            return
+                        }
+                        callback(null, {
+                            message: `Found user with id ${id}.`,
+                            data: results
+                        })
+                    }
+                }
+            )
         })
     }
+
+  
 }
 
 
