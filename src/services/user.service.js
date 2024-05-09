@@ -89,7 +89,6 @@ const userService = {
         })
     },
 
-    // Authenticated user
     getProfile: (userId, callback) => {
         logger.info('getProfile userId:', userId)
  
