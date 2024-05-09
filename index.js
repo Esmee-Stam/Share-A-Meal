@@ -1,5 +1,6 @@
 const express = require('express')
 const userRoutes = require('./src/routes/user.routes')
+const authRoutes = require('./src/routes/authentication.routes').routes
 const logger = require('./src/util/logger')
 
 const app = express()
@@ -11,7 +12,7 @@ const port = process.env.PORT || 3000
 
 // Dit is een voorbeeld van een simpele route
 app.get('/api/info', (req, res) => {
-    console.log('GET /api/info')
+    logger.info('GET /api/info')
     const info = {
         name: 'My Nodejs Express server',
         version: '0.0.1',
@@ -22,6 +23,7 @@ app.get('/api/info', (req, res) => {
 
 // Hier komen alle routes
 app.use(userRoutes)
+app.use(authRoutes)
 
 // Route error handler
 app.use((req, res, next) => {

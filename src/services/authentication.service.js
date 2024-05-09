@@ -1,18 +1,17 @@
 const jwt = require('jsonwebtoken')
-const db = require('../../maria-db')
+const db = require('../dao/mysql-db')
 // const validateEmail = require('../util/emailvalidator')
 const logger = require('../util/logger')
 const jwtSecretKey = require('../util/config').secretkey
 
 const authController = {
     login: (userCredentials, callback) => {
-        logger.debug('login');
+        logger.debug('login')
 
-        db.connection.getConnection((err, connection) => {
+        db.getConnection((err, connection) => {
             if (err) {
-                logger.error(err);
-                callback(err.message, null);
-                return;
+                logger.error(err)
+                callback(err.message, null)
             }
             if (connection) {
                 // 1. Kijk of deze useraccount bestaat.
