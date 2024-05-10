@@ -2,6 +2,7 @@ const logger = require('../util/logger')
 const db = require('../dao/mysql-db')
 
 const userService = {
+
     create: (newUser, callback) => {
         logger.info('create', newUser)
     
@@ -11,68 +12,59 @@ const userService = {
                 callback(err, null)
                 return
             } else {
-                connection.query('SELECT MAX(id) AS maxId FROM `user`', function (error, results) {
-                    if (error) {
-                        connection.release()
-                        logger.error(error)
-                        callback(error, null)
-                    } else {
-                        const maxId = results[0].maxId || 0
-                        const newUserId = maxId + 1
+                const roles = newUser.roles && newUser.roles.length > 0 ? newUser.roles.join(',') : ''
     
-                        const newRoles = newUser.roles && newUser.roles.length > 0 ? newUser.roles.join(',') : '' 
+                connection.query(
+                    'INSERT INTO `user` (`firstName`, `lastName`, `isActive`, `emailAdress`, `password`, `phoneNumber`, `roles`, `street`, `city`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [newUser.firstName,
+                        newUser.lastName,
+                        newUser.isActive ? 1 : 0 || 1,
+                        newUser.emailAdress,
+                        newUser.password,
+                        newUser.phoneNumber,
+                        roles,
+                        newUser.street || null,
+                        newUser.city || null
+                    ],
     
-                        connection.query(
-                            'INSERT INTO `user` (`id`, `firstName`, `lastName`, `isActive`, `emailAdress`, `password`, `phoneNumber`, `roles`, `street`, `city`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                            [newUserId,
-                                newUser.firstName,
-                                newUser.lastName,
-                                newUser.isActive ? 1 : 0 || 1,
-                                newUser.emailAdress,
-                                newUser.password,
-                                newUser.phoneNumber,
-                                newRoles,
-                                newUser.street || null,
-                                newUser.city || null
-                            ],
+                    function (error, results) {
+                        if (error) {
+                            logger.error(error)
+                            callback(error, null)
+                        } else {
+                            const newUserId = results.insertId
     
-                            function (error, results) {
-                                if (error) {
+                            connection.query(
+                                'SELECT * FROM `user` WHERE `id` = ?',
+                                [newUserId],
+                                function (error, userResults) {
                                     connection.release()
-                                    logger.error(error)
-                                    callback(error, null)
-                                } else {
-                                    connection.query(
-                                        'SELECT * FROM `user` WHERE `id` = ?',
-                                        [newUserId],
-                                        function (error, userResults) {
-                                            connection.release()
     
-                                            if (error) {
-                                                logger.error(error)
-                                                callback(error, null)
-                                            } else {
-                                                if (userResults.length > 0) {
-                                                    userResults[0].roles = userResults[0].roles.split(',')
-                                                }
-
-                                                logger.debug('Newly created user:', userResults)
-                                                callback(null, {
-                                                    message: `User created with id ${newUserId}.`,
-                                                    data: userResults,
-                                                    status: 201
-                                                })
-                                            }
+                                    if (error) {
+                                        logger.error(error)
+                                        callback(error, null)
+                                    } else {
+                                        if (userResults.length > 0) {
+                                            userResults[0].roles = userResults[0].roles.split(',')
                                         }
-                                    )
+    
+                                        logger.debug('Newly created user:', userResults)
+                                        callback(null, {
+                                            message: `User created with id ${newUserId}.`,
+                                            data: userResults,
+                                            status: 201
+                                        })
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
-                })
+                )
             }
         })
-    },    
+    },
+    
+    
 
     getAll: (callback) => {
         logger.info('getAll')
