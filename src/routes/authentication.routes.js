@@ -4,6 +4,8 @@ const jwtSecretKey = require('../util/config').secretkey
 const routes = require('express').Router()
 const AuthController = require('../controllers/authentication.controller')
 const logger = require('../util/logger')
+const mealService = require('../services/meal.service')
+
  
  
 function validateLogin(req, res, next) {
@@ -26,7 +28,6 @@ function validateLogin(req, res, next) {
         })
     }
 }
- 
  
 function validateToken(req, res, next) {
     logger.info('validateToken called')
@@ -98,6 +99,57 @@ function validateAuthorizeUser(req, res, next) {
  
     next()
 }
+
+function validateAuthorizeMeal(req, res, next) {
+    logger.info('authorizeMeal called')
+    logger.trace('Headers:', req.headers)
+   
+    const token = req.headers.authorization && req.headers.authorization.split(' ')[1]
+    const decodedToken = jwt.decode(token)
+    const tokenUserId = decodedToken ? decodedToken.userId : null
  
+    if (!tokenUserId) {
+        logger.warn('User ID missing from token!')
+        return next({
+            status: 401,
+            message: 'User ID missing from token!',
+            data: {}
+        })
+    }
+ 
+    const requestedMealId = req.params.mealId
+ 
+    mealService.getById(requestedMealId, (error, result) => {
+        if (error) {
+            return next({
+                status:  500,
+                message: error.message,
+                data: {}
+            })
+        }
+ 
+        const mealCookId = result.data && result.data[0] ? result.data[0].cookId : null
+ 
+        if (!mealCookId) {
+            logger.warn('Cook ID missing from meal!')
+            return next({
+                status: 403,
+                message: 'Cook ID missing from meal!',
+                data: {}
+            })
+        }
+ 
+        if (tokenUserId !== mealCookId) {
+            logger.warn('Not authorized to modify!')
+            return next({
+                status: 403,
+                message: 'Not authorized to modify!',
+                data: {}
+            })
+        }
+ 
+        next()
+    })
+}
 routes.post('/api/login', validateLogin, AuthController.login)
-module.exports = { routes, validateToken, validateAuthorizeUser }
+module.exports = { routes, validateToken, validateAuthorizeUser, validateAuthorizeMeal }
