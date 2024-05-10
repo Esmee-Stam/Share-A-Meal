@@ -1,13 +1,14 @@
-const mealsService = require('../services/meals.service')
+const mealService = require('../services/meal.service')
 const logger = require('../util/logger')
 
 let mealsController = {
     create: (req, res, next) => {
         logger.info('create')
-
+ 
         const meal = req.body
-        
-        mealsService.create(meal, (error, success) => {
+        const userId = req.userId
+       
+        mealService.create(meal, userId, (error, success) => {
             if (error) {
                 return next({
                     status: error.status,
@@ -27,7 +28,7 @@ let mealsController = {
 
     getAll: (req, res, next) => {
         logger.info('getAll')
-        mealsService.getAll((error, success) => {
+        mealService.getAll((error, success) => {
             if (error) {
                 return next({
                     status: error.status,
@@ -48,7 +49,7 @@ let mealsController = {
     getById: (req, res, next) => {
         const mealId = req.params.mealId
         logger.info('mealsController: getById', mealId)
-        mealsService.getById(mealId, (error, success) => {
+        mealService.getById(mealId, (error, success) => {
             if (error) {
                 return next({
                     status: error.status,
@@ -69,8 +70,9 @@ let mealsController = {
     update: (req, res, next) => {
         const mealId = req.params.mealId
         const meal = req.body
+        const userId = req.userId
         logger.info('mealsController: update', mealId, meal)
-        mealsService.update(mealId, meal, (error, success) => {
+        mealService.update(mealId, meal, userId, (error, success) => {
             if (error) {
                 return next({
                     status: error.status,
@@ -91,7 +93,7 @@ let mealsController = {
     delete: (req, res, next) => {
         const mealId = req.params.mealId
         logger.info('mealsController: delete', mealId)
-        mealsService.delete(mealId, (error, success) => {
+        mealService.delete(mealId, (error, success) => {
             if (error) {
                 return next({
                     status: error.status,
