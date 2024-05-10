@@ -67,6 +67,37 @@ function validateToken(req, res, next) {
         })
     }
 }
+
+function validateAuthorizeUser(req, res, next) {
+    logger.info('authorizeUser called')
+    logger.trace('Headers:', req.headers)
+   
+    const token = req.headers.authorization && req.headers.authorization.split(' ')[1]
+    const decodedToken = jwt.decode(token)
+    const tokenUserId = decodedToken ? decodedToken.userId : null
+ 
+    if (!tokenUserId) {
+        logger.warn('User ID missing from token!')
+        return next({
+            status: 401,
+            message: 'User ID missing from token!',
+            data: {}
+        })
+    }
+ 
+    const requestedUserId = req.params.userId
+ 
+    if (parseInt(requestedUserId) !== tokenUserId) {
+        logger.warn('Not authorized to modify / delete data of another user!')
+        return next({
+            status: 403,
+            message: 'Not authorized to modify / delete data of another user!',
+            data: {}
+        })
+    }
+ 
+    next()
+}
  
 routes.post('/api/login', validateLogin, AuthController.login)
-module.exports = { routes, validateToken }
+module.exports = { routes, validateToken, validateAuthorizeUser }

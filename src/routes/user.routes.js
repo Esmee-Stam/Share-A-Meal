@@ -5,6 +5,7 @@ const express = require('express')
     const router = express.Router()
     const userController = require('../controllers/user.controller')
     const validateToken = require('./authentication.routes').validateToken
+    const validateAuthorizeUser = require('./authentication.routes').validateAuthorizeUser
     const logger = require('../util/logger')
  
     // Tijdelijke functie om niet bestaande routes op te vangen
@@ -82,11 +83,24 @@ const express = require('express')
     }
    
     // Userroutes
+    //201 registreren als nieuwe user
     router.post('/api/user', validateUser, userController.create)
-    router.get('/api/user', userController.getAll)
-    router.get('/api/user/profile', validateToken, userController.getProfile)
-    router.get('/api/user/:userId', userController.getById)
-    router.put('/api/user/:userId', validateUser, userController.update)
-    router.delete('/api/user/:userId', userController.delete)
  
+    //202 opvragen van alle users
+    router.get('/api/user', userController.getAll)
+ 
+    //203 opvragen van een specifieke user
+    router.get('/api/user/profile', validateToken, userController.getProfile);
+    
+    //204 opvragen gegevens van een user op basis van id
+    router.get('/api/user/:userId', validateToken, userController.getById)
+    
+    //205 wijzigen van gegevens van een user op basis van id
+    router.put('/api/user/:userId', validateUser, validateAuthorizeUser, userController.update)
+    
+    //206 verwijderen van een user op basis van id
+    router.delete('/api/user/:userId', validateToken, validateAuthorizeUser, userController.delete)
+    
+    //router.get('/api/user', validateToken, userController.getAll)
+
     module.exports = router

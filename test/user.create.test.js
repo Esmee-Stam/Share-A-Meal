@@ -147,14 +147,13 @@ describe('UC201 Registreren als nieuwe user', () => {
     })
    
    
- 
     it('TC-201-5 Gebruiker succesvol geregistreerd', (done) => {
         chai.request(server)
             .post(endpointToTest)
             .send({
                 firstName: 'Voornaam',
                 lastName: 'Achternaam',
-                emailAdress: 'v.a@server.nl',
+                emailAdress: 'voornaam.achternaam@server.nl',
                 password: 'Secret123345',
                 phoneNumber: '0612345678',
                 street: 'Straatnaam',
@@ -173,12 +172,13 @@ describe('UC201 Registreren als nieuwe user', () => {
                 user.should.be.an('object')
                 user.should.have.property('firstName').equals('Voornaam')
                 user.should.have.property('lastName').equals('Achternaam')
-                user.should.have.property('emailAdress').equals('v.a@server.nl')
+                user.should.have.property('emailAdress').equals('voornaam.achternaam@server.nl')
                 user.should.have.property('id').that.is.a('number')
    
                 done()
             })
     })
+   
    
 })
  
