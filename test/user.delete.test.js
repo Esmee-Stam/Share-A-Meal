@@ -43,7 +43,7 @@ describe('UC-206 Verwijderen van user', () => {
     })
  
     it('TC-206-1 Gebruiker bestaat niet', (done) => {
-        const nonExistingUserId = 7 // ID van een niet-bestaande gebruiker
+        const nonExistingUserId = 7 // Een id van een niet bestaande gebruiker
         const deleteQuery = 'DELETE FROM `user` WHERE `id` = ?'
        
         database.getConnection(function (err, connection) {
@@ -59,7 +59,7 @@ describe('UC-206 Verwijderen van user', () => {
                     return
                 }
    
-                chai.expect(results.affectedRows).to.equal(0) // Er mag geen gebruiker zijn verwijderd
+                chai.expect(results.affectedRows).to.equal(0) 
                 done()
             })
         })

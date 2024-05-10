@@ -198,7 +198,7 @@ let mealService = {
 
     delete: (mealId, callback) => {
         logger.info('delete - meal', mealId)
-   
+    
         db.getConnection(function (err, connection) {
             if (err) {
                 logger.error(err)
@@ -214,24 +214,21 @@ let mealService = {
                         callback(error, null)
                         return
                     }
+                    if (mealResults.length === 0) {
+                        callback({ status: 404, message: `Meal with ID ${mealId} not found!` }, null)
+                        return
+                    }
                     connection.query(
                         'DELETE FROM `meal` WHERE `id` = ?',
                         [mealId],
                         function (error, results) {
                             connection.release()
-   
+    
                             if (error) {
                                 logger.error(error)
                                 callback(error, null)
                             } else {
                                 logger.debug(results)
-                                if (results.affectedRows === 0) {
-                                    callback(
-                                        { message: `Error: Meal with id ${mealId} does not exist!` },
-                                        null
-                                    )
-                                    return
-                                }
                                 callback(null, {
                                     message: `Deleted meal with id ${mealId}.`,
                                     data: mealResults[0],
@@ -244,6 +241,10 @@ let mealService = {
             )
         })
     }
+    
+
+
+    
 }
 
 module.exports = mealService

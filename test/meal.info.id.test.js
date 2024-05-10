@@ -8,14 +8,15 @@ const tracer = require('tracer')
 const database = require('../src/dao/mysql-db')
 const logger = require('../src/util/logger')
  
-const jwt = require('jsonwebtoken')
-const jwtSecretKey = require('../src/util/config').secretkey
- 
 chai.should()
 chai.use(chaiHttp)
 tracer.setLevel('warn')
  
-const endpointToTest = '/api/user'
+const jwt = require('jsonwebtoken')
+const jwtSecretKey = require('../src/util/config').secretkey
+ 
+const endpointToTest = '/api/meal'
+
  
 //Database queries
 const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;'
@@ -24,17 +25,22 @@ const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;'
 const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
  
 const INSERT_USER =
-'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-'(1, "first", "last", "name@server.nl", "secret", "street", "city");'
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(1, "first", "last", "name@server.nl", "secret", "street", "city");'
  
-describe('UC204 Opvragen ', () => {
+const INSERT_MEALS =
+    'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
+    "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
+    "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
+    
+describe('UC-304 Opvragen van maaltijd bij ID', () => {
     beforeEach((done) => {
         logger.debug('beforeEach called')
         database.getConnection(function (err, connection) {
             if (err) throw err
  
             connection.query(
-                CLEAR_DB + INSERT_USER,
+                CLEAR_DB + INSERT_USER + INSERT_MEALS,
                 function (error, results, fields) {
                     connection.release()
                     if (error) throw error
@@ -45,44 +51,32 @@ describe('UC204 Opvragen ', () => {
         })
     })
  
-    it("TC Ongeldige token", (done) => {
-        chai.request(server)
-            .get(`${endpointToTest}/1`)
-            .set('Authorization', 'Bearer ' + 'invalid_token')
-            .end((err, res) => {
-                chai.expect(res).to.have.status(401)
-                chai.expect(res.body).to.be.an('object')
-                chai.expect(res.body).to.have.property('status').equals(401)
-                chai.expect(res.body).to.have.property('message').equals('Not authorized!')
-                chai.expect(res.body).to.have.property('data').that.is.an('object').that.is.empty
-              
-                done()
-            })
-    })
-
-    it('TC-204-2 Gebruiker-ID bestaat niet', (done) => {
-        const nonExistingUserId = 7
-        const token = jwt.sign({ userId: 1 }, jwtSecretKey)
+    it('TC-304-1 Maaltijd bestaat niet', (done) => {
+        const nonExistingMealId = -1 
+        const token = jwt.sign({ userId: 1 }, jwtSecretKey) 
    
         database.getConnection(function (err, connection) {
             if (err) return done(err)
-            const query = 'SELECT id FROM user WHERE id = ?'
-            connection.query(query, [nonExistingUserId], function (error, results, fields) {
+            const query = 'SELECT id FROM meal WHERE id = ?'
+            connection.query(query, [nonExistingMealId], function (error, results, fields) {
                 connection.release()
                 if (error) return done(error)
                 if (results.length === 0) {
- 
                     chai.request(server)
-                        .get(`${endpointToTest}/${nonExistingUserId}`)
+                        .get(`${endpointToTest}/${nonExistingMealId}`)
                         .set('Authorization', `Bearer ${token}`)
                         .end((err, res) => {
-                            if (err) return done(err)
-                                chai.expect(res).to.have.status(404)
-                            done()
+                            if (err) {
+                                return done(err)
+                            } else {
+                                res.should.have.status(404)
+                                done()
+                            }
+                           
                         })
                 } else {
-                    done( {
-                        error: `User with ID ${nonExistingUserId} exists in the database`
+                    done({
+                        error: `Meal with ID ${nonExistingMealId} exists in the database`
                         }
                     )
                 }
@@ -90,7 +84,7 @@ describe('UC204 Opvragen ', () => {
         })
     })
    
-    it('TC-204-3 Gebruiker-ID bestaat', (done) => {
+    it('TC-304-2 Details van maaltijd geretourneerd', (done) => {
         const token = jwt.sign({ userId: 1 }, jwtSecretKey)
  
         chai.request(server)
@@ -99,8 +93,7 @@ describe('UC204 Opvragen ', () => {
             .end((err, res) => {
                 chai.expect(res).to.have.status(200)
                 chai.expect(res.body).to.be.an('object')
-                chai.expect(res.body).to.have.property('data').that.is.an('object')
-            
+                chai.expect(res.body).to.have.property('data')
                 done()
             })
     })

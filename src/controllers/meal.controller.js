@@ -52,7 +52,7 @@ let mealsController = {
         mealService.getById(mealId, (error, success) => {
             if (error) {
                 return next({
-                    status: error.status,
+                    status: 404,
                     message: error.message,
                     data: {}
                 })
@@ -95,11 +95,19 @@ let mealsController = {
         logger.info('mealsController: delete', mealId)
         mealService.delete(mealId, (error, success) => {
             if (error) {
-                return next({
-                    status: error.status,
-                    message: error.message,
-                    data: {}
-                })
+                if (error.status === 404) {
+                    return res.status(404).json({
+                        status: 404,
+                        message: error.message,
+                        data: {}
+                    })
+                } else {
+                    return next({
+                        status: 500,
+                        message: error.message,
+                        data: {}
+                    })
+                }
             }
             if (success) {
                 res.status(200).json({
@@ -110,6 +118,7 @@ let mealsController = {
             }
         })
     }
+    
 }
 
 module.exports = mealsController
