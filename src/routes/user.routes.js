@@ -83,22 +83,16 @@ const express = require('express')
     }
    
     // Userroutes
-    //201 registreren als nieuwe user
     router.post('/api/user', validateUser, userController.create)
  
-    //202 opvragen van alle users
     router.get('/api/user', userController.getAll)
  
-    //203 opvragen van een specifieke user
     router.get('/api/user/profile', validateToken, userController.getProfile);
     
-    //204 opvragen gegevens van een user op basis van id
     router.get('/api/user/:userId', validateToken, userController.getById)
     
-    //205 wijzigen van gegevens van een user op basis van id
     router.put('/api/user/:userId', validateUser, validateAuthorizeUser, userController.update)
     
-    //206 verwijderen van een user op basis van id
     router.delete('/api/user/:userId', validateToken, validateAuthorizeUser, userController.delete)
     
     //router.get('/api/user', validateToken, userController.getAll)

@@ -124,8 +124,10 @@ const userService = {
                     } else {
                         logger.debug(results)
                         if (results.length === 0) {
-                            callback(
-                                { message: `Error: id ${id} does not exist!` },
+                            callback({
+                                status: 404,
+                                message: `Error: id ${id} does not exist!` 
+                                },
                                 null
                             )
                             return
