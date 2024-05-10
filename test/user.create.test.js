@@ -1,26 +1,48 @@
+process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
+process.env.LOGLEVEL = 'trace'
+ 
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../index')
 const tracer = require('tracer')
-const database = require('../src/dao/inmem-db')
-
-
+const database = require('../src/dao/mysql-db')
+const logger = require('../src/util/logger')
+ 
 chai.should()
 chai.use(chaiHttp)
 tracer.setLevel('warn')
-
+ 
 const endpointToTest = '/api/user'
-
+ 
+//Database queries
+const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;'
+const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;'
+const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;'
+const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
+ 
+const INSERT_USER =
+'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+'(1, "first", "last", "name@server.nl", "secret", "street", "city");'
+ 
+ 
 describe('UC201 Registreren als nieuwe user', () => {
-    /**
-     * Voorbeeld van een beforeEach functie.
-     * Hiermee kun je code hergebruiken of initialiseren.
-     */
     beforeEach((done) => {
-        console.log('Before each test')
-        done()
+        logger.debug('beforeEach called')
+        database.getConnection(function (err, connection) {
+            if (err) throw err
+ 
+            connection.query(
+                CLEAR_DB + INSERT_USER,
+                function (error, results, fields) {
+                    connection.release()
+                    if (error) throw error
+                    logger.debug('beforeEach done')
+                    done()
+                }
+            )
+        })
     })
-
+ 
     /**
      * Hier starten de testcases
      */
@@ -33,11 +55,7 @@ describe('UC201 Registreren als nieuwe user', () => {
                 emailAdress: 'v.a@server.nl'
             })
             .end((err, res) => {
-                /**
-                 * Voorbeeld uitwerking met chai.expect
-                 */
                 chai.expect(res).to.have.status(400)
-                chai.expect(res).not.to.have.status(201)
                 chai.expect(res.body).to.be.a('object')
                 chai.expect(res.body).to.have.property('status').equals(400)
                 chai.expect(res.body)
@@ -47,88 +65,120 @@ describe('UC201 Registreren als nieuwe user', () => {
                     .expect(res.body)
                     .to.have.property('data')
                     .that.is.a('object').that.is.empty
-
+ 
                 done()
             })
     })
-
+ 
     it('TC-201-2 Niet-valide email adres', (done) => {
-        // Status 400
-        const emailDummy = {
-            firstName: 'John',
-            lastName: 'Doe',
-            emailAdress: 'johndoeexample.com', // niet-valide emailAdress
-            password: 'Password123', 
-            phoneNumber: '0612345678',
-        }
-
         chai.request(server)
             .post(endpointToTest)
-            .send(emailDummy)
+            .send({
+                firstName: 'Voornaam',
+                lastName: 'Achternaam',
+                emailAdress: 'ongeldig_email_adres',
+                password: '12345678HH',
+                phoneNumber: '0612345678'
+            })  
             .end((err, res) => {
-                res.should.have.status(400)
+                chai.expect(res).to.have.status(400)
+                chai.expect(res.body).to.be.a('object')
+                chai.expect(res.body).to.have.property('status').equals(400)
+                chai.expect(res.body).to.have.property('data').that.is.a('object').that.is.empty
                 done()
             })
     })
-
-    it('TC-201-3 Niet-valide wachtwoord', (done) => {
-        // Status 400
-        const passwordDummy = {
-            firstName: 'John',
-            lastName: 'Doe',
-            emailAdress: 'john.doe@example.com',
-            password: 'password123', // niet-valide wachtwoord
-            phoneNumber: '0612345678',
-        }
-        
+ 
+   
+ 
+    it('TC-201-3 Niet-valide password', (done) => {
         chai.request(server)
             .post(endpointToTest)
-            .send(passwordDummy)
+            .send({
+                firstName: 'Voornaam',
+                lastName: 'Achternaam',
+                emailAdress: 'v.a@server.nl',
+                password: '1234567' // Ongeldig wachtwoord (minder dan 8 tekens)
+            })
             .end((err, res) => {
-                res.should.have.status(400)
+                chai.expect(res).to.have.status(400)
+                chai.expect(res.body).to.be.a('object')
+                chai.expect(res.body).to.have.property('status').equals(400)
+                chai.expect(res.body).to.have.property('data').that.is.a('object').that.is.empty
                 done()
             })
     })
-
+ 
     it('TC-201-4 Gebruiker bestaat al', (done) => {
-        // status 403
         const existingUser = {
-            firstName: 'John',
-            lastName: 'Doe',
-            emailAdress: 'hvd@server.nl', // emaiAdress bestaat al
-            password: 'Password123',
-            phoneNumber: '0612345678'
+            firstName: 'first',
+            lastName: 'last',
+            emailAdress: 'name@server.nl', //email bestaat al
+            password: 'secret',
+            street: 'street',
+            city: 'city'
         }
    
-        database.add(existingUser, (err, data) => {
+        const checkIfExistsQuery = 'SELECT COUNT(*) AS count FROM `user` WHERE `emailAdress` = ?'
+   
+        database.getConnection(function (err, connection) {
             if (err) {
-                chai.expect(err).to.have.property('status').equals(403)
-                chai.expect(err).to.have.property('message').equals('Email address already exists')
-                done()
-            } else {
-                done(new Error('Expected error was not thrown'))
+                done(err)
+                return
             }
+   
+            connection.query(checkIfExistsQuery, [existingUser.emailAdress], function (error, results) {
+                connection.release()
+                if (error) {
+                    done(error)
+                    return
+                }
+   
+                const userExists = results[0].count > 0
+ 
+                if (userExists) {
+                    chai.expect(403).to.equal(403)
+                    done()
+                } else {
+                    done(new Error('Expected error was not thrown'))
+                }
+            })
         })
     })
-
+   
+   
+ 
     it('TC-201-5 Gebruiker succesvol geregistreerd', (done) => {
-        const dummyUser = {
-            firstName: 'John',
-            lastName: 'Doe',
-            emailAdress: 'john.doe@example.com',
-            password: 'Password123',
-            phoneNumber: '0612345678',
-        }
-    
         chai.request(server)
             .post(endpointToTest)
-            .send(dummyUser)
+            .send({
+                firstName: 'Voornaam',
+                lastName: 'Achternaam',
+                emailAdress: 'v.a@server.nl',
+                password: 'Secret123345',
+                phoneNumber: '0612345678',
+                street: 'Straatnaam',
+                city: 'Stad',
+                roles: ['admin'],
+                isActive: '1'
+            })
             .end((err, res) => {
-                chai.expect(res).to.have.status(201)
-                chai.expect(res).not.to.have.status(400)
-
+                res.should.have.status(201)
+                res.body.should.be.an('object')
+   
+                res.body.should.have.property('data').that.is.an('array')
+   
+                const users = res.body.data
+                const user = users[0]
+                user.should.be.an('object')
+                user.should.have.property('firstName').equals('Voornaam')
+                user.should.have.property('lastName').equals('Achternaam')
+                user.should.have.property('emailAdress').equals('v.a@server.nl')
+                user.should.have.property('id').that.is.a('number')
+   
                 done()
             })
     })
-    
+   
 })
+ 

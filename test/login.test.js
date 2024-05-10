@@ -1,28 +1,47 @@
-const chai = require('chai')
-const chaiHttp = require('chai-http')
-const server = require('../index')
-const tracer = require('tracer')
-const database = require('../src/dao/inmem-db')
+process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
+    process.env.LOGLEVEL = 'trace'
  
-chai.should()
-chai.use(chaiHttp)
-tracer.setLevel('warn')
+    const chai = require('chai')
+    const chaiHttp = require('chai-http')
+    const server = require('../index')
+    const tracer = require('tracer')
+    const database = require('../src/dao/mysql-db')
+    const logger = require('../src/util/logger')
  
-const endpointToTest = '/api/login'
+    chai.should()
+    chai.use(chaiHttp)
+    tracer.setLevel('warn')
  
-describe('UC101 Inloggen', () => {
-    /**
-     * Voorbeeld van een beforeEach functie.
-     * Hiermee kun je code hergebruiken of initialiseren.
-     */
-    beforeEach((done) => {
-        console.log('Before each test')
-        done()
-    })
+    const endpointToTest = '/api/login'
  
-    /**
-     * Hier starten de testcases
-     */
+    //Database queries
+    const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;'
+    const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;'
+    const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;'
+    const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
+ 
+    const INSERT_USER =
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(1, "first", "last", "name@server.nl", "secret", "street", "city");'
+ 
+    describe('UC101 Inloggen', () => {
+        beforeEach((done) => {
+            logger.debug('beforeEach called')
+            database.getConnection(function (err, connection) {
+                if (err) throw err
+ 
+                connection.query(
+                    CLEAR_DB + INSERT_USER,
+                    function (error, results, fields) {
+                        connection.release()
+                        if (error) throw error
+                        logger.debug('beforeEach done')
+                        done()
+                    }
+                )
+            })
+        })
+       
     it('TC-101-1 Verplicht veld ontbreekt', (done) => {
         chai.request(server)
             .post(endpointToTest)
@@ -46,7 +65,7 @@ describe('UC101 Inloggen', () => {
         chai.request(server)
             .post(endpointToTest)
             .send({
-                emailAdress: 'm.vandullemen@server.nl',
+                emailAdress: 'name@server.nl',
                 password: '1234567' // Ongeldig wachtwoord (minder dan 8 tekens)
             })
             .end((err, res) => {
@@ -62,7 +81,7 @@ describe('UC101 Inloggen', () => {
         chai.request(server)
             .post(endpointToTest)
             .send({
-                emailAdress: 'john@doe.com',
+                emailAdress: 'non_existing_email@example.com',
                 password: '12345678'
             })
             .end((err, res) => {
@@ -77,7 +96,7 @@ describe('UC101 Inloggen', () => {
         chai.request(server)
             .post(endpointToTest)
             .send({
-                emailAdress: 'm.vandullemen@server.nl',
+                emailAdress: 'name@server.nl',
                 password: 'secret',
             })
             .end((err, res) => {
