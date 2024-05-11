@@ -193,7 +193,6 @@ const userService = {
                 return
             }
     
-            // Controleer eerst of het gebruikers-ID bestaat
             connection.query(
                 'SELECT * FROM `user` WHERE `id` = ?',
                 [id],
@@ -204,7 +203,6 @@ const userService = {
                         return
                     }
     
-                    // Als het gebruikers-ID niet bestaat, retourneer dan een status 404
                     if (results.length === 0) {
                         callback({
                             status: 404,
@@ -244,7 +242,6 @@ const userService = {
                                             logger.error(error)
                                             callback(error, null)
                                         } else {
-                                            // Split roles string into an array
                                             if (updatedUserResults.length > 0) {
                                                 updatedUserResults[0].roles = updatedUserResults[0].roles.split(',')
                                             }

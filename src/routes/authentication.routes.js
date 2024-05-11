@@ -155,7 +155,7 @@ function validateAuthorizeMeal(req, res, next) {
             logger.warn(`You are not authorized to modify or delete another user's data!`)
             return next({
                 status: 403,
-                message: ``,
+                message: `You are not authorized to modify or delete another user's data!`,
                 data: {}
             })
         }
@@ -173,11 +173,19 @@ function validateLoginNotEmpty(req, res, next) {
         const password = req.body.password
  
         if (!email || email.trim() === '') {
-            throw new Error('emailAdress is required.')
+            return next({
+                status: 400,
+                message: 'email is required.',
+                data: {}
+            })
         }
- 
+    
         if (!password || password.trim() === '') {
-            throw new Error('password is required.')
+            return next({
+                status: 400,
+                message: 'password is required.',
+                data: {}
+            })
         }
  
         next()
@@ -189,9 +197,6 @@ function validateLoginNotEmpty(req, res, next) {
         })
     }
 }
-
-   
-
 
 routes.post('/api/login', validateLoginNotEmpty, validateLogin, AuthController.login)
 module.exports = { routes, validateAuthorizeUser, validateAuthorizeMeal, validateToken }
