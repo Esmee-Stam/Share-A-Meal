@@ -96,28 +96,28 @@ describe('UC-206 Verwijderen van user', () => {
                 done()
             })
     })
-   
+
     it('TC-206-4 Gebruiker succesvol verwijderd', (done) => {
         const existingUserId = 1
-   
-        const deleteQuery = 'DELETE FROM `user` WHERE `id` = ?'
-       
-        database.getConnection(function (err, connection) {
-            if (err) {
-                done(err)
-                return
-            }
-   
-            connection.query(deleteQuery, [existingUserId], function (error, results) {
-                connection.release()
-                if (error) {
-                    done(error)
+        const token = jwt.sign({ userId: 1 }, jwtSecretKey)
+    
+        chai.request(server)
+            .delete(`/api/user/${existingUserId}`)
+            .set('Authorization', `Bearer ${token}`) 
+            .end((err, res) => {
+                if (err) {
+                    done(err)
                     return
                 }
-   
-                chai.expect(results.affectedRows).to.equal(1)
+                chai.expect(res.body).to.be.an('object')
+                chai.expect(res.body).to.have.property('message').equal('Deleted user with id 1.')
+            
+                if (res.status) {
+                    chai.expect(res).to.have.status(200)
+                }
+    
                 done()
             })
-        })
     })
+
 })

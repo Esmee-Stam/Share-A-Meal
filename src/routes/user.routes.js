@@ -33,64 +33,56 @@ const validateUserChaiExpect = (req, res, next) => {
         chai.expect(req.body.lastName).to.match(
             /^[a-zA-Z\s]+$/,
             'lastName must be a string'
-        );  
+        )  
  
-        assert(req.body.emailAdress, 'Missing or incorrect email field');
-        chai.expect(req.body.emailAdress).to.not.be.empty;
-        chai.expect(req.body.emailAdress).to.be.a('string');
+        assert(req.body.emailAdress, 'Missing or incorrect email field')
+        chai.expect(req.body.emailAdress).to.not.be.empty
+        chai.expect(req.body.emailAdress).to.be.a('string')
         chai.expect(req.body.emailAdress).to.match(
             /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
             'Invalid email address'
-        );
+        )
    
-        assert(req.body.password, 'Missing or incorrect password field');
-        chai.expect(req.body.password).to.not.be.empty;
-        chai.expect(req.body.password).to.be.a('string');
+        assert(req.body.password, 'Missing or incorrect password field')
+        chai.expect(req.body.password).to.not.be.empty
+        chai.expect(req.body.password).to.be.a('string')
         chai.expect(req.body.password).to.match(
             /^(?=.*[A-Z])(?=.*\d).{8,}$/,
             'Password must contain at least one uppercase letter, one digit, and be at least 8 characters long'
-        );
+        )
    
-        assert(req.body.phoneNumber, 'Missing or incorrect phoneNumber field');
-        chai.expect(req.body.phoneNumber).to.not.be.empty;
-        chai.expect(req.body.phoneNumber).to.be.a('string');
+        assert(req.body.phoneNumber, 'Missing or incorrect phoneNumber field')
+        chai.expect(req.body.phoneNumber).to.not.be.empty
+        chai.expect(req.body.phoneNumber).to.be.a('string')
         chai.expect(req.body.phoneNumber).to.match(
             /^06[\s-]?\d{8}$/,
             'phoneNumber must be in the format 06-12345678, 06 12345678, or 0612345678'
-        );
+        )
    
-        next();
+        next()
     } catch (ex) {
-        let statusCode = 400;
+        let statusCode = 400
    
         return res.status(statusCode).json({
             status: statusCode,
             message: ex.message,
             data: {}
-        });
+        })
     }
-};
+}
    
  
 // Userroutes
-//201 registreren als nieuwe user
 router.post('/api/user', validateUserChaiExpect, userController.create)
  
-//202 opvragen van alle users
 router.get('/api/user', userController.getAll)
  
-//router.get('/api/user', validateToken, userController.getAll)
+router.get('/api/user/profile', validateToken, userController.getProfile)
  
-//203 opvragen van een specifieke user
-router.get('/api/user/profile', validateToken, userController.getProfile);
- 
-//204 opvragen gegevens van een user op basis van id
 router.get('/api/user/:userId', validateToken, userController.getById)
  
-//205 wijzigen van gegevens van een user op basis van id
 router.put('/api/user/:userId', validateUserChaiExpect, validateToken, validateAuthorizeUser, userController.update)
  
-//206 verwijderen van een user op basis van id
 router.delete('/api/user/:userId', validateToken, validateAuthorizeUser, userController.delete)
  
 module.exports = router

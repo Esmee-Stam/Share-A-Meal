@@ -102,25 +102,20 @@ describe('UC-305 Verwijderen van maaltijd', () => {
 
     it('TC-305-4 Maaltijd succesvol verwijderd', (done) => {
         const existingMealId = 1
-
-        const deleteQuery = 'DELETE FROM `meal` WHERE `id` = ?'
-       
-        database.getConnection(function (err, connection) {
-            if (err) {
-                done(err)
-                return
-            }
-       
-            connection.query(deleteQuery, [existingMealId], function (error, results) {
-                connection.release()
-                if (error) {
-                    done(error)
-                    return
-                } 
-       
-                chai.expect(results.affectedRows).to.equal(1)
+        const token = jwt.sign({ userId: 1 }, jwtSecretKey)
+   
+        chai.request(server)
+            .delete(`${endpointToTest}/${existingMealId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .end((err, res) => {
+                chai.expect(res).to.have.status(200)
+                chai.expect(res.body).to.be.an('object')
+                chai.expect(res.body).to.have.property('status').equal(200)
+                chai.expect(res.body).to.have.property('message').equal('Deleted meal with id 1.')
+                chai.expect(res.body).to.have.property('data')
+                chai.expect(res.body.data).to.be.an('object')
+               
                 done()
             })
-        })
     })
 })

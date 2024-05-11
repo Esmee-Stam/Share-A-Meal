@@ -130,8 +130,6 @@ describe('UC-205 Updaten van usergegevens', () => {
                             res.should.have.status(404)
                             done()
                         })
-                } else {
-                    done(new Error(`Gebruiker met ID ${nonExistingUserId} bestaat wel in de database`))
                 }
             })
         })
@@ -144,10 +142,10 @@ describe('UC-205 Updaten van usergegevens', () => {
             .put(`${endpointToTest}/1`)
             .set('Authorization', `Bearer ${invalidToken}`)
             .send({
-                firstName: 'NewFirstName',
-                lastName: 'NewLastName',
-                emailAdress: 'new.email@example.com',
-                password: 'NewPassword123',
+                firstName: 'Voornaam',
+                lastName: 'Achternaam',
+                emailAdress: 'v.a@server.nl',
+                password: 'Secret123',
                 phoneNumber: '0612345678'
             })
             .end((err, res) => {
@@ -168,8 +166,8 @@ describe('UC-205 Updaten van usergegevens', () => {
             .send({
                 firstName: 'Voornaam',
                 lastName: 'Achternaam',
-                emailAdress: 'new.email@example.com',
-                password: 'NewPassword123',
+                emailAdress: 'v.a@server.nl',
+                password: 'Secret123',
                 phoneNumber: '0612345678'
             })
             .set('Authorization', `Bearer ${token}`)

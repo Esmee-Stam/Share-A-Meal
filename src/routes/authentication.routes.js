@@ -93,15 +93,6 @@ function validateAuthorizeUser(req, res, next) {
     userService.getById(requestedUserId, (error, result) => {
         if (error) {
             return next({
-                status: 500,
-                message: error.message,
-                data: {}
-            })
-        }
-
-        if (!result.data || result.data.length === 0) {
-            logger.warn(`User with ID ${requestedUserId} does not exist!`)
-            return next({
                 status: 404,
                 message: `User with ID ${requestedUserId} does not exist!`,
                 data: {}
@@ -173,6 +164,34 @@ function validateAuthorizeMeal(req, res, next) {
     })
 }
 
+function validateLoginNotEmpty(req, res, next) {
+    logger.info('validateLoginNotEmpty called')
+    logger.trace('Body:', req.body)
+ 
+    try {
+        const email = req.body.emailAdress
+        const password = req.body.password
+ 
+        if (!email || email.trim() === '') {
+            throw new Error('emailAdress is required.')
+        }
+ 
+        if (!password || password.trim() === '') {
+            throw new Error('password is required.')
+        }
+ 
+        next()
+    } catch (ex) {
+        next({
+            status: 400,
+            message: ex.message,
+            data: {}
+        })
+    }
+}
 
-routes.post('/api/login', validateLogin, AuthController.login)
-module.exports = { routes, validateToken, validateAuthorizeUser, validateAuthorizeMeal }
+   
+
+
+routes.post('/api/login', validateLoginNotEmpty, validateLogin, AuthController.login)
+module.exports = { routes, validateAuthorizeUser, validateAuthorizeMeal, validateToken }

@@ -163,7 +163,7 @@ const userService = {
             }
 
             connection.query(
-                'SELECT id, firstName, lastName FROM `user` WHERE id = ?',
+                'SELECT * FROM `user` WHERE id = ?',
                 [userId],
                 function (error, results, fields) {
                     connection.release()
