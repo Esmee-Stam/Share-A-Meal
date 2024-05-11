@@ -150,7 +150,7 @@ describe('UC-205 Updaten van usergegevens', () => {
                 street: 'Straatnaam',
                 city: 'Stad',
                 roles: ['admin'],
-                isActive: '1'
+                isActive: 1
             })
             .end((err, res) => {
                 res.should.have.status(401)
