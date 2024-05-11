@@ -154,7 +154,7 @@ describe('UC-302 Wijzigen van maaltijdgegevens', () => {
                 isActive: 1,
                 isVegan: 0,
                 isToTakeHome: 1,
-                dateTime: "2023-04-06T10:27:16.849Z",
+                dateTime: "2021-12-31 23:59:59",
                 maxAmountOfParticipants:12,
                 imageUrl: "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
                 allergenes: ["gluten", "lactose"]

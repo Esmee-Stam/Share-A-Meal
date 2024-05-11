@@ -144,9 +144,13 @@ describe('UC-205 Updaten van usergegevens', () => {
             .send({
                 firstName: 'Voornaam',
                 lastName: 'Achternaam',
-                emailAdress: 'v.a@server.nl',
-                password: 'Secret123',
-                phoneNumber: '0612345678'
+                emailAdress: 'voornaam.achternaam@server.nl',
+                password: 'Secret123345',
+                phoneNumber: '0612345678',
+                street: 'Straatnaam',
+                city: 'Stad',
+                roles: ['admin'],
+                isActive: '1'
             })
             .end((err, res) => {
                 res.should.have.status(401)
