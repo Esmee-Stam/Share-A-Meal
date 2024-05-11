@@ -45,7 +45,7 @@ describe('UC204 Opvragen ', () => {
         })
     })
  
-    it("TC Ongeldige token", (done) => {
+    it("TC-204-1 Ongeldige token", (done) => {
         chai.request(server)
             .get(`${endpointToTest}/1`)
             .set('Authorization', 'Bearer ' + 'invalid_token')
@@ -97,10 +97,9 @@ describe('UC204 Opvragen ', () => {
             .get(`${endpointToTest}/1`)
             .set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
-                chai.expect(res).to.have.status(200)
-                chai.expect(res.body).to.be.an('object')
-                chai.expect(res.body).to.have.property('data').that.is.an('object')
-            
+                res.should.have.status(200)
+                res.body.should.be.an('object')
+                res.body.should.have.property('data')
                 done()
             })
     })

@@ -64,9 +64,11 @@ describe('UC-305 Verwijderen van maaltijd', () => {
     })  
 
     it('TC-305-2 Gebruiker is niet de eigenaar van de data', (done) => {
+        const token = jwt.sign({ userId: 2 }, jwtSecretKey)
+   
         chai.request(server)
-            .delete(`${endpointToTest}/2`)
-            .set('Authorization', 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImlhdCI6MTcxNTMzMzQ2MywiZXhwIjoxNzE2MzcwMjYzfQ.nDIpZ78n76JxsDckbqJwg1ew2RAF4smIcLYhwcf6Dnw')
+            .delete(`${endpointToTest}/1`)
+            .set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
                 chai.expect(res).to.have.status(403)
                 chai.expect(res.body).to.be.an('object')
@@ -75,7 +77,6 @@ describe('UC-305 Verwijderen van maaltijd', () => {
                 done()
             })
     })
-
     it('TC-305-3 Maaltijd bestaat niet', (done) => {
         const nonExistingMealId = -1
         const deleteQuery = 'DELETE FROM `meal` WHERE `id` = ?'

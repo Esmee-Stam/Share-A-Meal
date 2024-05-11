@@ -5,58 +5,78 @@ const userService = {
 
     create: (newUser, callback) => {
         logger.info('create', newUser)
-    
+     
         db.getConnection(function (err, connection) {
             if (err) {
                 logger.error(err)
                 callback(err, null)
                 return
             } else {
-                const roles = newUser.roles && newUser.roles.length > 0 ? newUser.roles.join(',') : ''
-    
                 connection.query(
-                    'INSERT INTO `user` (`firstName`, `lastName`, `isActive`, `emailAdress`, `password`, `phoneNumber`, `roles`, `street`, `city`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [newUser.firstName,
-                        newUser.lastName,
-                        newUser.isActive ? 1 : 0 || 1,
-                        newUser.emailAdress,
-                        newUser.password,
-                        newUser.phoneNumber,
-                        roles,
-                        newUser.street || null,
-                        newUser.city || null
-                    ],
-    
+                    'SELECT COUNT(*) AS count FROM `user` WHERE `emailAdress` = ?',
+                    [newUser.emailAdress],
                     function (error, results) {
                         if (error) {
+                            connection.release()
                             logger.error(error)
                             callback(error, null)
                         } else {
-                            const newUserId = results.insertId
-    
-                            connection.query(
-                                'SELECT * FROM `user` WHERE `id` = ?',
-                                [newUserId],
-                                function (error, userResults) {
-                                    connection.release()
-    
-                                    if (error) {
-                                        logger.error(error)
-                                        callback(error, null)
-                                    } else {
-                                        if (userResults.length > 0) {
-                                            userResults[0].roles = userResults[0].roles.split(',')
+                            const emailCount = results[0].count
+     
+                            if (emailCount > 0) {
+                                connection.release()
+                                const error = new Error('Email address already exists')
+                                error.status = 403
+                                callback(error, null)
+                            } else {
+                                let newUserId = null
+                                connection.query(
+                                    'INSERT INTO `user` (`firstName`, `lastName`, `isActive`, `emailAdress`, `password`, `phoneNumber`, `roles`, `street`, `city`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                    [
+                                        newUser.firstName,
+                                        newUser.lastName,
+                                        newUser.isActive ? 1 : 0 || 1,
+                                        newUser.emailAdress,
+                                        newUser.password,
+                                        newUser.phoneNumber,
+                                        newUser.roles && newUser.roles.length > 0 ? newUser.roles.join(',') : '',
+                                        newUser.street || null,
+                                        newUser.city || null
+                                    ],
+                                    function (error, insertResults) {
+                                        if (error) {
+                                            connection.release()
+                                            logger.error(error)
+                                            callback(error, null)
+                                        } else {
+                                            newUserId = insertResults.insertId
+     
+                                            connection.query(
+                                                'SELECT * FROM `user` WHERE `id` = ?',
+                                                [newUserId],
+                                                function (error, userResults) {
+                                                    connection.release()
+     
+                                                    if (error) {
+                                                        logger.error(error)
+                                                        callback(error, null)
+                                                    } else {
+                                                        if (userResults.length > 0) {
+                                                            userResults[0].roles = userResults[0].roles.split(',')
+                                                        }
+                                                        logger.debug('Newly created user:', userResults)
+                                                        callback(null, {
+                                                            message: `User created with id ${newUserId}.`,
+                                                            data: userResults,
+                                                            status: 201
+                                                        })
+                                                    }
+                                                }
+                                            )
                                         }
-    
-                                        logger.debug('Newly created user:', userResults)
-                                        callback(null, {
-                                            message: `User created with id ${newUserId}.`,
-                                            data: userResults,
-                                            status: 201
-                                        })
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 )
@@ -64,8 +84,6 @@ const userService = {
         })
     },
     
-    
-
     getAll: (callback) => {
         logger.info('getAll')
         db.getConnection(function (err, connection) {
@@ -175,53 +193,76 @@ const userService = {
                 return
             }
     
-            const updatedRoles = updatedUser.roles && updatedUser.roles.length > 0 ? updatedUser.roles.join(',') : '' 
-    
+            // Controleer eerst of het gebruikers-ID bestaat
             connection.query(
-                'UPDATE `user` SET `firstName` = ?, `lastName` = ?, `emailAdress` = ?, `password` = ?, `isActive` = ?, `street` = ?, `city` = ?, `phoneNumber` = ?, `roles` = ? WHERE `id` = ?',
-                [updatedUser.firstName, 
-                    updatedUser.lastName, 
-                    updatedUser.emailAdress, 
-                    updatedUser.password,
-                    updatedUser.isActive || null, 
-                    updatedUser.street || null,
-                    updatedUser.city || null, 
-                    updatedUser.phoneNumber, 
-                    updatedRoles, 
-                    id],
+                'SELECT * FROM `user` WHERE `id` = ?',
+                [id],
                 function (error, results, fields) {
-                    connection.release()
-    
                     if (error) {
                         logger.error(error)
                         callback(error, null)
-                    } else {
-                        logger.debug(results)
-    
-                        connection.query(
-                            'SELECT * FROM `user` WHERE `id` = ?',
-                            [id],
-                            function (error, updatedUserResults) {
-                                if (error) {
-                                    logger.error(error)
-                                    callback(error, null)
-                                } else {
-                                    // Split roles string into an array
-                                    if (updatedUserResults.length > 0) {
-                                        updatedUserResults[0].roles = updatedUserResults[0].roles.split(',')
-                                    }
-                                    callback(null, {
-                                        message: `User with id ${id} updated.`,
-                                        data: updatedUserResults
-                                    })
-                                }
-                            }
-                        )
+                        return
                     }
+    
+                    // Als het gebruikers-ID niet bestaat, retourneer dan een status 404
+                    if (results.length === 0) {
+                        callback({
+                            status: 404,
+                            message: `Error: id ${id} does not exist!` 
+                        }, null)
+                        return
+                    }
+    
+                    const updatedRoles = updatedUser.roles && updatedUser.roles.length > 0 ? updatedUser.roles.join(',') : '' 
+    
+                    connection.query(
+                        'UPDATE `user` SET `firstName` = ?, `lastName` = ?, `emailAdress` = ?, `password` = ?, `isActive` = ?, `street` = ?, `city` = ?, `phoneNumber` = ?, `roles` = ? WHERE `id` = ?',
+                        [updatedUser.firstName, 
+                            updatedUser.lastName, 
+                            updatedUser.emailAdress, 
+                            updatedUser.password,
+                            updatedUser.isActive || null, 
+                            updatedUser.street || null,
+                            updatedUser.city || null, 
+                            updatedUser.phoneNumber, 
+                            updatedRoles, 
+                            id],
+                        function (error, results, fields) {
+                            connection.release()
+    
+                            if (error) {
+                                logger.error(error)
+                                callback(error, null)
+                            } else {
+                                logger.debug(results)
+    
+                                connection.query(
+                                    'SELECT * FROM `user` WHERE `id` = ?',
+                                    [id],
+                                    function (error, updatedUserResults) {
+                                        if (error) {
+                                            logger.error(error)
+                                            callback(error, null)
+                                        } else {
+                                            // Split roles string into an array
+                                            if (updatedUserResults.length > 0) {
+                                                updatedUserResults[0].roles = updatedUserResults[0].roles.split(',')
+                                            }
+                                            callback(null, {
+                                                message: `User with id ${id} updated.`,
+                                                data: updatedUserResults
+                                            })
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    )
                 }
             )
         })
-    },    
+    },
+        
     
     delete: (UserId, callback) => {
         logger.info('delete', UserId)

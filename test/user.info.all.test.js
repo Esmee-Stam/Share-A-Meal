@@ -48,16 +48,18 @@ describe('UC-202 Opvragen van overzicht van users', () => {
     })
  
     it('TC-202-1 Toon alle gebruikers (minimaal 2)', (done) => {
+        const token = jwt.sign({ userId: 1 }, jwtSecretKey)
         chai.request(server)
             .get(endpointToTest)
+            .set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
                 if (err) return done(err)
-                    chai.expect(res).to.have.status(200)
-                    chai.expect(res.body).to.be.an('object')
-                    chai.expect(res.body).to.have.property('data').that.is.an('array').with.lengthOf.at.least(2)
-                
+               
+                res.should.have.status(200)
+                res.body.should.be.an('object')
+                res.body.should.have.property('data').that.is.an('array').with.lengthOf.at.least(2)
+ 
                 done()
-            
             })
     })
 })

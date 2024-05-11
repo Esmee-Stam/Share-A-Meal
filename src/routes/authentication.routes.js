@@ -5,6 +5,8 @@ const routes = require('express').Router()
 const AuthController = require('../controllers/authentication.controller')
 const logger = require('../util/logger')
 const mealService = require('../services/meal.service')
+const userService = require('../services/user.service')
+
 
  
  
@@ -88,16 +90,35 @@ function validateAuthorizeUser(req, res, next) {
  
     const requestedUserId = req.params.userId
  
-    if (parseInt(requestedUserId) !== tokenUserId) {
-        logger.warn('Not authorized to modify / delete data of another user!')
-        return next({
-            status: 403,
-            message: 'Not authorized to modify / delete data of another user!',
-            data: {}
-        })
-    }
- 
-    next()
+    userService.getById(requestedUserId, (error, result) => {
+        if (error) {
+            return next({
+                status: 500,
+                message: error.message,
+                data: {}
+            })
+        }
+
+        if (!result.data || result.data.length === 0) {
+            logger.warn(`User with ID ${requestedUserId} does not exist!`)
+            return next({
+                status: 404,
+                message: `User with ID ${requestedUserId} does not exist!`,
+                data: {}
+            })
+        }
+
+        if (parseInt(requestedUserId) !== tokenUserId) {
+            logger.warn(`You are not authorized to modify or delete another user's data!`)
+            return next({
+                status: 403,
+                message: `You are not authorized to modify or delete another user's data!`,
+                data: {}
+            })
+        }
+
+        next()
+    })
 }
 
 function validateAuthorizeMeal(req, res, next) {
@@ -107,7 +128,7 @@ function validateAuthorizeMeal(req, res, next) {
     const token = req.headers.authorization && req.headers.authorization.split(' ')[1]
     const decodedToken = jwt.decode(token)
     const tokenUserId = decodedToken ? decodedToken.userId : null
- 
+
     if (!tokenUserId) {
         logger.warn('User ID missing from token!')
         return next({
@@ -116,20 +137,20 @@ function validateAuthorizeMeal(req, res, next) {
             data: {}
         })
     }
- 
+
     const requestedMealId = req.params.mealId
- 
+
     mealService.getById(requestedMealId, (error, result) => {
         if (error) {
             return next({
-                status:  500,
-                message: error.message,
+                status:  404, 
+                message: 'Meal not found', 
                 data: {}
             })
         }
- 
+
         const mealCookId = result.data && result.data[0] ? result.data[0].cookId : null
- 
+
         if (!mealCookId) {
             logger.warn('Cook ID missing from meal!')
             return next({
@@ -138,18 +159,20 @@ function validateAuthorizeMeal(req, res, next) {
                 data: {}
             })
         }
- 
+
         if (tokenUserId !== mealCookId) {
-            logger.warn('Not authorized to modify!')
+            logger.warn(`You are not authorized to modify or delete another user's data!`)
             return next({
                 status: 403,
-                message: 'Not authorized to modify!',
+                message: ``,
                 data: {}
             })
         }
- 
+
         next()
     })
 }
+
+
 routes.post('/api/login', validateLogin, AuthController.login)
 module.exports = { routes, validateToken, validateAuthorizeUser, validateAuthorizeMeal }

@@ -7,6 +7,9 @@ const server = require('../index')
 const tracer = require('tracer')
 const database = require('../src/dao/mysql-db')
 const logger = require('../src/util/logger')
+
+const jwt = require('jsonwebtoken')
+const jwtSecretKey = require('../src/util/config').secretkey
  
 chai.should()
 chai.use(chaiHttp)
@@ -43,7 +46,7 @@ describe('UC-206 Verwijderen van user', () => {
     })
  
     it('TC-206-1 Gebruiker bestaat niet', (done) => {
-        const nonExistingUserId = 7 // Een id van een niet bestaande gebruiker
+        const nonExistingUserId = 7
         const deleteQuery = 'DELETE FROM `user` WHERE `id` = ?'
        
         database.getConnection(function (err, connection) {
@@ -59,7 +62,7 @@ describe('UC-206 Verwijderen van user', () => {
                     return
                 }
    
-                chai.expect(results.affectedRows).to.equal(0) 
+                chai.expect(results.affectedRows).to.equal(0)
                 done()
             })
         })
@@ -79,15 +82,17 @@ describe('UC-206 Verwijderen van user', () => {
     })
  
     it('TC-206-3 Gebruiker is niet de eigenaar van de data', (done) => {
+        const token = jwt.sign({ userId: 2 }, jwtSecretKey)
+   
         chai.request(server)
-            .delete(`${endpointToTest}/2`)
-            .set('Authorization', 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImlhdCI6MTcxNTMzMzQ2MywiZXhwIjoxNzE2MzcwMjYzfQ.nDIpZ78n76JxsDckbqJwg1ew2RAF4smIcLYhwcf6Dnw')
+            .delete(`${endpointToTest}/1`)
+            .set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
                 chai.expect(res).to.have.status(403)
                 chai.expect(res.body).to.be.an('object')
                 chai.expect(res.body).to.have.property('status').equals(403)
-                chai.expect(res.body).to.have.property('message').equals('Not authorized to modify / delete data of another user!')
                 chai.expect(res.body).to.have.property('data').that.is.an('object').that.is.empty
+                chai.expect(res.body).to.have.property('message').equals(`You are not authorized to modify or delete another user's data!`)
                 done()
             })
     })
