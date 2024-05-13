@@ -2,9 +2,6 @@ const logger = require('../util/logger')
 const db = require('../dao/mysql-db')
 const jwt = require('jsonwebtoken')
 
-const { validateToken } = require('../routes/authentication.routes')
-
-
 let mealService = {
     
     create: (mealData, userId, callback) => {
@@ -91,6 +88,7 @@ let mealService = {
                     } else {
                         logger.debug(results)
                         callback(null, {
+                            status: 200,
                             message: `Found ${results.length} meals.`,
                             data: results
                         })
@@ -128,6 +126,7 @@ let mealService = {
                             return
                         }
                         callback(null, {
+                            status: 200,
                             message: `Found meal with id ${id}.`,
                             data: results
                         })
@@ -242,12 +241,6 @@ let mealService = {
         })
     }
     
-
-
-    
 }
 
 module.exports = mealService
-
-
-

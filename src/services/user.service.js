@@ -104,6 +104,7 @@ const userService = {
                     } else {
                         logger.debug(results)
                         callback(null, {
+                            status: 200,
                             message: `Found ${results.length} users.`,
                             data: results
                         })
@@ -143,6 +144,7 @@ const userService = {
                             return
                         }
                         callback(null, {
+                            status: 200,
                             message: `Found user with id ${id}.`,
                             data: results
                         })
@@ -174,6 +176,7 @@ const userService = {
                     } else {
                         logger.debug(results)
                         callback(null, {
+                            status: 200,
                             message: `Found ${results.length} user.`,
                             data: results
                         })
@@ -246,6 +249,7 @@ const userService = {
                                                 updatedUserResults[0].roles = updatedUserResults[0].roles.split(',')
                                             }
                                             callback(null, {
+                                                status: 200,
                                                 message: `User with id ${id} updated.`,
                                                 data: updatedUserResults
                                             })
@@ -294,12 +298,16 @@ const userService = {
                                 logger.debug(results)
                                 if (results.affectedRows === 0) {
                                     callback(
-                                        { message: `Error: id ${UserId} does not exist!` },
+                                        {   
+                                            status: 404,
+                                            message: `Error: id ${UserId} does not exist!`
+                                        },
                                         null
                                     )
                                     return
                                 }
                                 callback(null, {
+                                    status: 200,
                                     message: `Deleted user with id ${UserId}.`,
                                     data: userResults
                                 })
