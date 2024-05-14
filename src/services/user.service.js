@@ -108,7 +108,7 @@ const userService = {
                         callback(null, {
                             status: 200,
                             message: `Found ${results.length} users.`,
-                            data: results[0]
+                            data: results
                         })
                     }
                 }
