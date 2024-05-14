@@ -69,7 +69,7 @@ const userService = {
                                                         logger.debug('Newly created user:', userResults)
                                                         callback(null, {
                                                             message: `User created with id ${newUserId}.`,
-                                                            data: userResults,
+                                                            data: userResults[0],
                                                             status: 201
                                                         })
                                                     }
@@ -116,7 +116,8 @@ const userService = {
         })
     },
 
-    getById: (id, callback) => {
+    
+     getById: (id, callback) => {
         logger.info('getById', id)
         db.getConnection(function (err, connection) {
             if (err) {
@@ -124,32 +125,53 @@ const userService = {
                 callback(err, null)
                 return
             }
-
+ 
+            let userData = null
+ 
             connection.query(
-                'SELECT * FROM `user` WHERE `id` = ?',
+                `SELECT id, firstName, lastName, isActive, emailAdress, phoneNumber, roles, street, city FROM \`user\` WHERE \`id\` = ?`,
                 [id],
-                function (error, results, fields) {
-                    connection.release()
-
+                function (error, userResults, fields) {
                     if (error) {
+                        connection.release()
                         logger.error(error)
                         callback(error, null)
                     } else {
-                        logger.debug(results)
-                        if (results.length === 0) {
-                            callback({
-                                status: 404,
-                                message: `Error: id ${id} does not exist!` 
-                                },
+                        logger.debug(userResults)
+                        if (userResults.length === 0) {
+                            connection.release()
+                            callback(
+                                { status: 404, message: `Error: id ${id} does not exist!` },
                                 null
                             )
                             return
                         }
-                        callback(null, {
-                            status: 200,
-                            message: `Found user with id ${id}.`,
-                            data: results
-                        })
+ 
+                        userData = userResults[0]
+ 
+                        connection.query(
+                            `SELECT * FROM meal WHERE cookId = ?`,
+                            [id],
+                            function (mealError, mealResults, fields) {
+                                connection.release()
+                       
+                                if (mealError) {
+                                    logger.error(mealError)
+                                    callback(mealError, null)
+                                } else {
+                                    logger.debug(mealResults)
+                       
+                                    callback(null, {
+                                        message: `Found user with id ${id}.`,
+                                        data: {
+                                            user: userData,
+                                            meals: mealResults[0]
+                                        },
+                                        status: 200
+                                    })
+                                }
+                            }
+                        )
                     }
                 }
             )
@@ -253,7 +275,7 @@ const userService = {
                                             callback(null, {
                                                 status: 200,
                                                 message: `User with id ${id} updated.`,
-                                                data: updatedUserResults
+                                                data: updatedUserResults[0]
                                             })
                                         }
                                     }
@@ -310,7 +332,7 @@ const userService = {
                                 callback(null, {
                                     status: 200,
                                     message: `Deleted user with id ${UserId}.`,
-                                    data: userResults
+                                    data: userResults[0]
                                 })
                             }
                         }

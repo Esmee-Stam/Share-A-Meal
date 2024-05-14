@@ -70,6 +70,7 @@ process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
             .end((err, res) => {
                 chai.expect(res).to.have.status(200)    
                 chai.expect(res.body).to.be.an('object')
+                chai.expect(res.body).to.have.property('status').equals(200)                
                 done()
             })
     })

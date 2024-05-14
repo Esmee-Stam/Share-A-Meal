@@ -105,18 +105,11 @@ describe('UC-206 Verwijderen van user', () => {
             .delete(`/api/user/${existingUserId}`)
             .set('Authorization', `Bearer ${token}`) 
             .end((err, res) => {
-                if (err) {
-                    done(err)
-                    return
-                }
+                chai.expect(res).to.have.status(200)
                 chai.expect(res.body).to.be.an('object')
-                chai.expect(res.body).to.have.property('message').equal('Deleted user with id 1.')
-            
-                if (res.status) {
-                    chai.expect(res).to.have.status(200)
-                }
-    
+                chai.expect(res.body).to.have.property('message').equals('Deleted user with id 1.')
                 done()
+            
             })
     })
 

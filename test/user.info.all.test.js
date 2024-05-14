@@ -53,12 +53,10 @@ describe('UC-202 Opvragen van overzicht van users', () => {
             .get(endpointToTest)
             .set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
-                if (err) return done(err)
-               
-                res.should.have.status(200)
-                res.body.should.be.an('object')
-                res.body.should.have.property('data').that.is.an('array').with.lengthOf.at.least(2)
- 
+                chai.expect(res).to.have.status(200)
+                chai.expect(res.body).to.be.an('object')
+                chai.expect(res.body).to.have.property('data').that.is.an('array').with.lengthOf.at.least(2)
+                
                 done()
             })
     })

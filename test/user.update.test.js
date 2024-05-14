@@ -153,12 +153,14 @@ describe('UC-205 Updaten van usergegevens', () => {
                 isActive: 1
             })
             .end((err, res) => {
-                res.should.have.status(401)
-                res.body.should.be.an('object')
-                res.body.should.have.property('status').equals(401)
-                res.body.should.have.property('message').equals('Not authorized!')
-                res.body.should.have.property('data').that.is.an('object').that.is.empty
+                chai.expect(res).to.have.status(401)
+                chai.expect(res.body).to.be.a('object')
+                chai.expect(res.body).to.have.property('status').equals(401)
+                chai.expect(res.body).to.have.property('message').equals('Not authorized!')
+                chai.expect(res.body).to.have.property('data').that.is.a('object').that.is.empty
+   
                 done()
+            
             })
     })
    
@@ -180,11 +182,23 @@ describe('UC-205 Updaten van usergegevens', () => {
             })
             .set('Authorization', `Bearer ${token}`)
             .end((err, res) => {
-                if (err) return done(err)
-                res.should.have.status(200)
+                chai.expect(res).to.have.status(200)
+                chai.expect(res.body).to.be.a('object')
+                chai.expect(res.body).to.have.property('status').equals(200)
+
+                const data = res.body.data
+                chai.expect(data).to.have.property('firstName').equals('Voornaam')
+                chai.expect(data).to.have.property('lastName').equals('Achternaam')
+                chai.expect(data).to.have.property('emailAdress').equals('voornaam.achternaam@server.nl')	
+                chai.expect(data).to.have.property('phoneNumber').equals('0612345678')
+                chai.expect(data).to.have.property('street').equals('Straatnaam')
+                chai.expect(data).to.have.property('city').equals('Stad')
+                chai.expect(data).to.have.property('roles').that.is.an('array').that.includes('admin')
+                chai.expect(data).to.have.property('isActive').equals(1)
                 done()
+
+                
             })
-    })
-    
+    }) 
    
 })

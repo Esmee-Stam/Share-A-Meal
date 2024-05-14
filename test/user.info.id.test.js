@@ -69,23 +69,15 @@ describe('UC204 Opvragen ', () => {
             const query = 'SELECT id FROM user WHERE id = ?'
             connection.query(query, [nonExistingUserId], function (error, results, fields) {
                 connection.release()
-                if (error) return done(error)
-                if (results.length === 0) {
- 
-                    chai.request(server)
-                        .get(`${endpointToTest}/${nonExistingUserId}`)
-                        .set('Authorization', `Bearer ${token}`)
-                        .end((err, res) => {
-                            if (err) return done(err)
-                                chai.expect(res).to.have.status(404)
-                            done()
-                        })
-                } else {
-                    done( {
-                        error: `User with ID ${nonExistingUserId} exists in the database`
-                        }
-                    )
-                }
+                chai.request(server)
+                    .get(`${endpointToTest}/${nonExistingUserId}`)
+                    .set('Authorization', `Bearer ${token}`)
+                    .end((err, res) => {
+                        chai.expect(res).to.have.status(404)
+                        chai.expect(res.body).to.be.a('object')
+                        chai.expect(res.body).to.have.property('status').equals(404)
+                        done()
+                    })
             })
         })
     })
