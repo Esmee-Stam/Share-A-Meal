@@ -1,6 +1,6 @@
 # Nodejs Programmeren 4 Express server
 
-Hier komt een korte introductie.
+Users can register in the system. The person can then offer one or more meals. A meal is offered at a date and time, and has a number of properties, such as a description, an image, and information about whether or not it is vegetarian or vegan. Other users who wish can sign up to participate in the meal for a small fee.
 
 ## Installing
 
