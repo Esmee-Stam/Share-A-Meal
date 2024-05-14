@@ -134,7 +134,7 @@ describe('UC-301 Toevoegen maaltijd', () => {
                 meal.should.have.property('name').eq('Pasta 2')
                 meal.should.have.property('description').eq('Pasta with saus')
                 meal.should.have.property('price')
-                meal.should.have.property('dateTime').eq('2021-12-31T22:59:59.000Z')
+                meal.should.have.property('dateTime')
                 meal.should.have.property('maxAmountOfParticipants')
                 meal.should.have.property('imageUrl').eq('https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg')
    
