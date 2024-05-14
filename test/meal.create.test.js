@@ -111,29 +111,34 @@ describe('UC-301 Toevoegen maaltijd', () => {
             .set('Authorization', `Bearer ${token}`)
             .send({
                 name: 'Pasta 2',
-                description: 'Past with saus',
-                price: 12,
+                description: 'Pasta with saus',
+                price: 10.00,
                 isActive: true,
                 isVegan: false,
                 isVega: true,
                 isToTakeHome: true,
                 dateTime: '2021-12-31 23:59:59',
-                maxAmountOfParticipants: 12,
+                maxAmountOfParticipants: 10.00,
                 imageUrl: 'https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg',
                 allergenes: ['gluten', 'lactose']
             })
             .end((err, res) => {
-                if (err) {
-                    return done(err)
-                } else {
-                    chai.expect(res).to.have.status(201)
-                    chai.expect(res.body).to.be.an('object')
-                    chai.expect(res.body).to.have.property('status').equals(201)
-                    chai.expect(res.body).to.have.property('data').that.is.an('array').that.is.not.empty
-               
-                    done()
-                }
+                if (err) return done(err)
+                res.should.have.status(201)
+                res.body.should.be.a('object')
+                res.body.should.have.property('status').equal(201)
+                res.body.should.have.property('data').that.is.an('object').that.is.not.empty
+   
+                const meal = res.body.data
+                meal.should.have.property('id').that.is.a('number')
+                meal.should.have.property('name').eq('Pasta 2')
+                meal.should.have.property('description').eq('Pasta with saus')
+                meal.should.have.property('price')
+                meal.should.have.property('dateTime').eq('2021-12-31T22:59:59.000Z')
+                meal.should.have.property('maxAmountOfParticipants')
+                meal.should.have.property('imageUrl').eq('https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg')
+   
+                done()
             })
     })
-
 })

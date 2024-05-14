@@ -1,9 +1,7 @@
-const logger = require('../util/logger')
 const db = require('../dao/mysql-db')
-const jwt = require('jsonwebtoken')
-
-let mealService = {
-    
+const logger = require('../util/logger')
+ 
+const mealService = {
     create: (mealData, userId, callback) => {
         logger.info('create meal', mealData)
  
@@ -56,7 +54,7 @@ let mealService = {
                                     logger.debug('Newly created meal:', mealResults)
                                     callback(null, {
                                         message: `Meal created with id ${newMealId}.`,
-                                        data: mealResults,
+                                        data: mealResults[0],
                                         status: 201
                                     })
                                 }
@@ -67,75 +65,64 @@ let mealService = {
             )
         })
     },
-    
+   
     getAll: (callback) => {
-        logger.info('getAll - meal')
+        logger.info('getAll')
         db.getConnection(function (err, connection) {
             if (err) {
                 logger.error(err)
                 callback(err, null)
                 return
             }
-
+ 
             connection.query(
                 'SELECT * FROM `meal`',
                 function (error, results, fields) {
                     connection.release()
-
+ 
                     if (error) {
                         logger.error(error)
                         callback(error, null)
                     } else {
                         logger.debug(results)
                         callback(null, {
-                            status: 200,
                             message: `Found ${results.length} meals.`,
-                            data: results
+                            data: results,
+                            status: 200
                         })
                     }
                 }
             )
         })
     },
-
-    getById: (id, callback) => {
-        logger.info('getById - meal', id)
-        db.getConnection(function (err, connection) {
-            if (err) {
-                logger.error(err)
-                callback(err, null)
-                return
+ 
+    getById: (mealId, callback) => {
+        logger.info('mealsService: getById', mealId)
+        db.query('SELECT * FROM meal WHERE id = ?', mealId, (error, results) => {
+            if (error) {
+                return callback({
+                    status: 500,
+                    message: 'Internal Server Error',
+                    data: {}
+                })
             }
-
-            connection.query(
-                'SELECT * FROM `meal` WHERE `id` = ?',
-                [id],
-                function (error, results, fields) {
-                    connection.release()
-
-                    if (error) {
-                        logger.error(error)
-                        callback(error, null)
-                    } else {
-                        logger.debug(results)
-                        if (results.length === 0) {
-                            callback(
-                                { message: `Error: id ${id} does not exist!` },
-                                null
-                            )
-                            return
-                        }
-                        callback(null, {
-                            status: 200,
-                            message: `Found meal with id ${id}.`,
-                            data: results
-                        })
-                    }
-                }
-            )
+            if (results.length === 0) {
+                return callback({
+                    status: 404,
+                    message: `Meal with ID ${mealId} does not exist.`,
+                    data: {}
+                })
+            }
+            if (results) {
+                return callback(null, {
+                    status: 200,
+                    message: `Found meal with id ${mealId}`,
+                    data: results
+                })
+            }
         })
     },
-
+ 
     update: (mealId, mealData, userId, callback) => {
         logger.info('update meal', mealData)
  
@@ -183,7 +170,7 @@ let mealService = {
                                     logger.debug('Updated meal:', mealResults)
                                     callback(null, {
                                         message: `Meal updated with id ${mealId}.`,
-                                        data: mealResults,
+                                        data: mealResults[0],
                                         status: 200
                                     })
                                 }
@@ -194,10 +181,10 @@ let mealService = {
             )
         })
     },
-
+ 
     delete: (mealId, callback) => {
-        logger.info('delete - meal', mealId)
-    
+        logger.info('delete', mealId)
+   
         db.getConnection(function (err, connection) {
             if (err) {
                 logger.error(err)
@@ -213,21 +200,24 @@ let mealService = {
                         callback(error, null)
                         return
                     }
-                    if (mealResults.length === 0) {
-                        callback({ status: 404, message: `Meal with ID ${mealId} not found!` }, null)
-                        return
-                    }
                     connection.query(
                         'DELETE FROM `meal` WHERE `id` = ?',
                         [mealId],
                         function (error, results) {
                             connection.release()
-    
+   
                             if (error) {
                                 logger.error(error)
                                 callback(error, null)
                             } else {
                                 logger.debug(results)
+                                if (results.affectedRows === 0) {
+                                    callback(
+                                        { message: `Error: Meal with id ${mealId} does not exist!` },
+                                        null
+                                    )
+                                    return
+                                }
                                 callback(null, {
                                     message: `Deleted meal with id ${mealId}.`,
                                     data: mealResults[0],
@@ -240,7 +230,7 @@ let mealService = {
             )
         })
     }
-    
 }
-
+ 
 module.exports = mealService
+ 

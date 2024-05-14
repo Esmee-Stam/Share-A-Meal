@@ -173,8 +173,13 @@ describe('UC201 Registreren als nieuwe user', () => {
                 user.should.have.property('firstName').equals('Voornaam')
                 user.should.have.property('lastName').equals('Achternaam')
                 user.should.have.property('emailAdress').equals('voornaam.achternaam@server.nl')
+                user.should.have.property('password').equals('Secret123345')
                 user.should.have.property('id').that.is.a('number')
-   
+                user.should.have.property('street').equals('Straatnaam')
+                user.should.have.property('city').equals('Stad')
+                user.should.have.property('roles').that.is.an('array').that.includes('admin')
+                user.should.have.property('isActive').equals(1)
+
                 done()
             })
     })

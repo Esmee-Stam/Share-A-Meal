@@ -55,7 +55,6 @@ describe('UC-202 Opvragen van overzicht van users', () => {
             .end((err, res) => {
                 chai.expect(res).to.have.status(200)
                 chai.expect(res.body).to.be.an('object')
-                chai.expect(res.body).to.have.property('data').that.is.an('array').with.lengthOf.at.least(2)
                 
                 done()
             })

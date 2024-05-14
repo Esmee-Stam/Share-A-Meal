@@ -66,7 +66,7 @@ process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
             .post(endpointToTest)
             .send({
                 emailAdress: 'name@server.nl',
-                password: '1234567' // Ongeldig wachtwoord (minder dan 8 tekens)
+                password: '1234567' // Ongeldig wachtwoord 
             })
             .end((err, res) => {
                 chai.expect(res).to.have.status(400)
@@ -104,6 +104,7 @@ process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
                 chai.expect(res.body).to.be.a('object')
                 chai.expect(res.body).to.have.property('data').that.is.a('object')
                 chai.expect(res.body.data).to.have.property('token').that.is.a('string')
+            
                 done()
             })
     })

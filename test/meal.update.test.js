@@ -167,8 +167,23 @@ describe('UC-302 Wijzigen van maaltijdgegevens', () => {
                 chai.expect(res.body).to.have.property('status').equals(200)
                 if (chai.expect(res.body).to.have.property('message')) {
                     chai.expect(res.body).to.have.property('message').that.is.a('string')
+                    
+                    const meals = res.body.data
+                    meals.should.have.property('id').equals(1)
+                    meals.should.have.property('name').equals('Pasta')
+                    meals.should.have.property('description').equals('Pasta with saus')
+                    meals.should.have.property('price')
+                    meals.should.have.property('isActive').equals(1)
+                    meals.should.have.property('isVegan').equals(0)
+                    meals.should.have.property('isToTakeHome').equals(1)
+                    meals.should.have.property('dateTime')
+                    meals.should.have.property('maxAmountOfParticipants')
+                    meals.should.have.property('imageUrl').equals('https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg')
+                    meals.should.have.property('allergenes').to.be.an('array').to.have.lengthOf(2)
+                    meals.allergenes.should.include('gluten')
+                    meals.allergenes.should.include('lactose')
+                
                 }
-   
    
                 done()
             })

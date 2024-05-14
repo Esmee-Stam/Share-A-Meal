@@ -109,7 +109,8 @@ describe('UC-206 Verwijderen van user', () => {
                 chai.expect(res.body).to.be.an('object')
                 chai.expect(res.body).to.have.property('message').equals('Deleted user with id 1.')
                 done()
-            
+               
+
             })
     })
 

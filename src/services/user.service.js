@@ -69,7 +69,7 @@ const userService = {
                                                         logger.debug('Newly created user:', userResults)
                                                         callback(null, {
                                                             message: `User created with id ${newUserId}.`,
-                                                            data: userResults[0],
+                                                            data: userResults,
                                                             status: 201
                                                         })
                                                     }
@@ -108,7 +108,7 @@ const userService = {
                         callback(null, {
                             status: 200,
                             message: `Found ${results.length} users.`,
-                            data: results
+                            data: results[0]
                         })
                     }
                 }
@@ -116,8 +116,7 @@ const userService = {
         })
     },
 
-    
-     getById: (id, callback) => {
+    getById: (id, callback) => {
         logger.info('getById', id)
         db.getConnection(function (err, connection) {
             if (err) {
@@ -165,7 +164,7 @@ const userService = {
                                         message: `Found user with id ${id}.`,
                                         data: {
                                             user: userData,
-                                            meals: mealResults[0]
+                                            meals: mealResults
                                         },
                                         status: 200
                                     })
@@ -202,7 +201,7 @@ const userService = {
                         callback(null, {
                             status: 200,
                             message: `Found ${results.length} user.`,
-                            data: results
+                            data: results[0]
                         })
                     }
                 }
@@ -332,7 +331,7 @@ const userService = {
                                 callback(null, {
                                     status: 200,
                                     message: `Deleted user with id ${UserId}.`,
-                                    data: userResults[0]
+                                    data: userResults
                                 })
                             }
                         }
