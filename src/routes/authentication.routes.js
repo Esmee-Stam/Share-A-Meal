@@ -8,8 +8,6 @@ const mealService = require('../services/meal.service')
 const userService = require('../services/user.service')
 
 
- 
- 
 function validateLogin(req, res, next) {
     // Verify that we receive the expected input
     try {
