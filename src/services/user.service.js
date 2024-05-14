@@ -286,33 +286,46 @@ const userService = {
             )
         })
     },
-    
+
     delete: (UserId, callback) => {
         logger.info('delete', UserId)
-     
+ 
         db.getConnection(function (err, connection) {
             if (err) {
                 logger.error(err)
                 callback(err, null)
                 return
             }
-     
+ 
             connection.query(
-                'SELECT * FROM `user` WHERE `id` = ?',
+                'SELECT * FROM `meal` WHERE `cookId` = ?',
                 [UserId],
-                function (error, userResults) {
+                function (error, mealResults) {
                     if (error) {
                         logger.error(error)
+                        connection.release()
                         callback(error, null)
                         return
                     }
-     
+ 
+                    if (mealResults.length > 0) {
+                        connection.release()
+                        callback(
+                            { 
+                                status: 409,
+                                message: `Cannot delete user with id ${UserId} because there are related meals.`,
+                                data: {}
+                            },
+                        )
+                        return
+                    }
+ 
                     connection.query(
                         'DELETE FROM `user` WHERE `id` = ?',
                         [UserId],
                         function (error, results) {
                             connection.release()
-     
+ 
                             if (error) {
                                 logger.error(error)
                                 callback(error, null)
@@ -320,18 +333,15 @@ const userService = {
                                 logger.debug(results)
                                 if (results.affectedRows === 0) {
                                     callback(
-                                        {   
-                                            status: 404,
-                                            message: `Error: id ${UserId} does not exist!`
-                                        },
+                                        { message: `Error: id ${UserId} does not exist!` },
                                         null
                                     )
                                     return
                                 }
                                 callback(null, {
-                                    status: 200,
                                     message: `Deleted user with id ${UserId}.`,
-                                    data: userResults
+                                    data: null,
+                                    status: 200
                                 })
                             }
                         }
@@ -342,4 +352,6 @@ const userService = {
     }
 }
 
+
+      
 module.exports = userService
