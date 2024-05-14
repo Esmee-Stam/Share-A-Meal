@@ -25,9 +25,11 @@ const userService = {
      
                             if (emailCount > 0) {
                                 connection.release()
-                                const error = new Error('Email address already exists')
-                                error.status = 403
-                                callback(error, null)
+                                callback({
+                                    status: 403,
+                                    message: 'Email address already exists',
+                                    data: {}
+                                }, null)
                             } else {
                                 let newUserId = null
                                 connection.query(
@@ -263,7 +265,6 @@ const userService = {
             )
         })
     },
-        
     
     delete: (UserId, callback) => {
         logger.info('delete', UserId)
