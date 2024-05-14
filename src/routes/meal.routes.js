@@ -5,7 +5,7 @@ chai.should()
 const router = express.Router()
 const mealController = require('../controllers/meal.controller')
 const validateToken = require('./authentication.routes').validateToken
-const validateAuthorizeMeal = require('./authentication.routes').validateAuthorizeMeal
+const validateAuthorizeMeal = require('./meal.authentication.routes').validateAuthorizeMeal
  
 const validateMealCreateChaiExpect = (req, res, next) => {
     try {
